@@ -1,11 +1,19 @@
-## Installation
-```bash
-$ npm run dev:install
-```
+## Before you go
+locate the .env.sample in both frontend and backend
+create a .env for both frontend and backend at their root level
+copy and paste everything from .env.sample to your .env and save 
 
-## To start the app
-```bash for both frontend and backend in one go
-$ npm run dev 
+## Installation & Start web server
+```bash -- install dependencies and setup node version at the same time from project root.
+$ ./dev.sh
+```
+or
+
+```bash -- To setup node version manually by going into each sub folder: 
+$ nvm use
+$ cd frontend & nvm use & npm install
+$ cd ../backend & nvm use & npm install
+$ cd .. & npm run dev
 ```
 
 or start frontend and backend separately

@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction, RequestHandler } from "express";
+import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 
-export const routeProtector: RequestHandler = (req, res, next) => {
+export const authenticate: RequestHandler = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
     res.status(401).json({ message: "No token found" });
@@ -10,10 +10,7 @@ export const routeProtector: RequestHandler = (req, res, next) => {
   }
 
   try {
-    const payload = jwt.verify(
-      token, 
-      env.JWT_SECRET
-    ) as { 
+    const payload = jwt.verify( token, env.JWT_SECRET ) as { 
       sub: string; 
       role: string 
     };

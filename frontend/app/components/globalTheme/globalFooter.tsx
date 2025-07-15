@@ -5,17 +5,22 @@ import {
   FooterLinkGroup,
 } from "flowbite-react";
 
-interface GlobalFooterProps {}
-
-export default function GlobalFooter(props: GlobalFooterProps) {
+export default function GlobalFooter() {
   return (
-    <Footer container className="bg-gray-50 border-t border-gray-100 mt-10 py-1 text-sm">
-      <div className="w-full flex flex-col md:flex-row items-center justify-between">
-        <FooterCopyright href="#" by="GROUP7™" year={2025} />
-        <FooterLinkGroup className="flex space-x-4 mt-4 md:mt-0">
-          <FooterLink href="#">About</FooterLink>
-          <FooterLink href="#">Events</FooterLink>
-          <FooterLink href="#">Contact</FooterLink>
+    <Footer className="fixed bottom-0 left-0 w-full bg-gray-50 border-t border-gray-100 p-0">
+      <div className="container mx-auto px-6 flex items-center justify-between h-8">
+        {/* remove any default margin, force same font-size */}
+        <FooterCopyright 
+          href="#" 
+          by="GROUP7™" 
+          year={2025} 
+          className="m-0 text-xs" 
+        />
+        <FooterLinkGroup className="flex space-x-4 m-0">
+          {/* strip their vertical padding too */}
+          <FooterLink href="#" className="py-0 text-xs">About</FooterLink>
+          <FooterLink href="#" className="py-0 text-xs">Events</FooterLink>
+          <FooterLink href="#" className="py-0 text-xs">Contact</FooterLink>
         </FooterLinkGroup>
       </div>
     </Footer>

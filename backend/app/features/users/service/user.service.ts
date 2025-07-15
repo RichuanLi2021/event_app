@@ -1,6 +1,5 @@
 import { User } from "../types/user.type";
 import { UserModel } from "../models/user.model";
-import { env } from "../../../config/env";
 import { UserUpdateInput } from "../types/user.type";
 
 const SAFE_PROJECTION = '-password -__v';
@@ -8,10 +7,11 @@ const SAFE_PROJECTION = '-password -__v';
 export class UserService {
     // get a single user's profile
     static async getOne(userId: string): Promise<User | null> {
-        return UserModel
-            .findById(userId)
-            .select(SAFE_PROJECTION)
-            .lean();
+        try {
+            return UserModel.findById(userId).select(SAFE_PROJECTION).lean();
+        } catch(error) {
+            throw new Error(`Invalid User ID ${error}`);
+        }
     }
 
       /** Get all users – for admin dashboard (supports optional filter/pagination) */

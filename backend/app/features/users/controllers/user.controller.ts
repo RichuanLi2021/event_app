@@ -1,30 +1,56 @@
-import { Request, Response } from "express";
-import { UserModel } from "../models/user.model";
+import { NextFunction, Request, Response } from "express";
+import { UserService } from "../service/user.service";
 
-// Users and Admin
-export async function getUser(req: Request, res: Response): Promise<void> {
-    const user = await UserModel.findById(req.params.id);
-    res.json(user);
+// GET / - get one user
+export async function getUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const user = await UserService.getOne(req.params.id);
+        res.status(200).json(user);
+    } catch (err) { 
+        
+        next(err); 
+    }
 }
 
-export async function updateUser(req: Request, res: Response): Promise<void> {
-    const updated = await UserModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+// GET / - get All users -- Admin
+export async function getALL(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const allUser = await UserService.getAll();
+        res.status(200).json(allUser);
+    } catch (err) { 
+        
+        next(err); 
+    }
 }
 
-export async function deleteUser(req: Request, res: Response): Promise<void> {
-    await UserModel.findByIdAndDelete(req.params.id);
-    res.status(204).end();
+// UPDATE / -update an user
+export async function updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const updated = await UserService.updateOne(req.params.id, req.body);
+        res.status(201).json(updated);
+    } catch(err) {
+        next(err);
+    }
 }
 
-// Admin only
-export async function getAllUsers(req: Request, res: Response): Promise<void> {
-    const users = await UserModel.find();
-    res.json(users);
+// DELETE / - delete an user
+export async function deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        await UserService.deleteOne(req.params.id);
+        res.status(204).end();
+    } catch (err) {
+
+        next(err);
+    }
 }
 
-export async function deleteSomeUsers(req: Request, res: Response): Promise<void> {
-    const idsToDelete = req.body.ids;
-    await UserModel.deleteMany({ _id: { $in: idsToDelete } });
-    res.json({ deletedIds: idsToDelete });
+// DELETE / - delete multiple users -- Admin
+export async function deleteSomeUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const idsToDelete: string[] = req.body.ids;
+        await UserService.deleteSome(idsToDelete)
+        res.status(204).json({ deletedIds: idsToDelete });
+    } catch (err) {
+        next(err)
+    }
 }

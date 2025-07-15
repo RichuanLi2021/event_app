@@ -6,13 +6,11 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     
-    "client": "cd frontend && nvm use && npm run dev",
-    "server": "cd backend && nvm use && npm run dev",
+    "client": "cd frontend && npm run dev",
+    "server": "cd backend && npm run dev",
 
     "build": "npm run build --prefix backend && npm run build --prefix frontend",
     "start": "concurrently \"npm run start --prefix backend\" \"npm run start --prefix frontend\"",
-    
-    "dev:install": "npm install && cd backend && nvm use && npm install && cd ../frontend && nvm use && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

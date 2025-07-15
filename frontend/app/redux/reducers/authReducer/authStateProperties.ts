@@ -4,7 +4,7 @@ export default interface AuthState {
     pendingSignup?: SignupValues; //form data to be sent
     pendingLogin?: LoginValues;
 
-    currentUsers: User | null;
+    currentUser: User | null;
     jwtToken: string | null;
     isAuthenticated: boolean;
     

@@ -1,11 +1,6 @@
 import type { EventProperties } from "../../../types/events";
 import * as actionTypes from "../../actions/events/actionTypes";
-
-interface EventState {
-    events: EventProperties[];
-    loading: boolean;
-    error: string | null;
-}
+import type { EventState } from "./eventStateProperties";
 
 const initialState: EventState = {
     events: [],

@@ -9,7 +9,14 @@ export enum AuthActionTypes {
   LOGIN_SUCCESS = 'auth/LOGIN_SUCCESS',
   LOGIN_FAILURE = 'auth/LOGIN_FAILURE',
 
-  //Logout - tmp
-  LOGOUT = 'auth/LOGOUT'
-  // Implement LOGOUT_REQUEST, LOGOUT_SUCCESS, LOGOUT_FAILURE when backend db is setup to use async for logout
+  // Logout - tmp
+  LOGOUT = 'auth/LOGOUT',
+
+  // Refresh
+  REFRESH_REQUEST = 'auth/REFRESH_REQUEST',
+  REFRESH_SUCCESS = 'auth/REFRESH_SUCCESS',
+  REFRESH_FAILURE = 'auth/REFRESH_FAILURE',
+
+  // Authenticated
+  SET_AUTHENTICATED = 'auth/SET_AUTHENTICATED',
 }

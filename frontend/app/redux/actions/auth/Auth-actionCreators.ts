@@ -1,10 +1,9 @@
-import type { Dispatch } from "redux";
 import { AuthActionTypes } from "./Auth-actionTypes";
-import { toast } from 'react-toastify';
 import type { SignupValues, LoginValues, User, LoginSuccessPayload } from "~/features/auth/types/auth_types";
 import * as authApi from '~/features/auth/services/authApi'
 import type { ThunkAction } from 'redux-thunk';
-import type { AppState } from "~/redux/store";
+import { persistor, type AppState } from "~/redux/store";
+import { jwtDecode }  from "jwt-decode";
 
 //Signup actions
 interface SignupRequestAction {
@@ -29,7 +28,11 @@ export type AuthActions =
   | LoginRequestAction
   | LoginSuccessAction
   | LoginFailureAction
-  | SyncLogoutAction;
+  | SyncLogoutAction
+  | SetAuthenticatedAction
+  | RefreshRequestAction
+  | RefreshSuccessAction
+  | RefreshFailureAction;
 
 export const signupUser = (
   formData: SignupValues
@@ -80,7 +83,6 @@ export const loginUser = (
     });
     try {
       const data = await authApi.login(formData);
-      localStorage.setItem('token', data.token);
       dispatch({
         type: AuthActionTypes.LOGIN_SUCCESS,
         payload: { 
@@ -104,8 +106,65 @@ interface SyncLogoutAction {
   type: AuthActionTypes.LOGOUT
 };
 
-export const logoutUser = ():ThunkAction<void, AppState, unknown, AuthActions> => 
-  (dispatch) => {
-    localStorage.removeItem('token');
-    dispatch({type: AuthActionTypes.LOGOUT});
+export const logoutUser = ():
+  ThunkAction<void, AppState, unknown, AuthActions> => 
+  async (dispatch) => {
+    try {
+      await authApi.logout();
+      dispatch({ type: AuthActionTypes.LOGOUT });
+
+      await persistor.flush();
+      await persistor.purge();
+      localStorage.removeItem("persist:auth"); // force remove if purge failed to clear
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
 }
+
+interface SetAuthenticatedAction {
+    type: AuthActionTypes.SET_AUTHENTICATED;
+}
+
+interface JwtPayload { 
+  exp: number 
+}
+
+export const validateToken = ():
+  ThunkAction<void, AppState, unknown, AuthActions> =>
+  async (dispatch, getState) => {
+    const { jwtToken } = (getState() as AppState).auth;
+    if (!jwtToken) return;
+
+    try {
+      const { exp } = jwtDecode<JwtPayload>(jwtToken);
+      const stillValid = exp * 1000 > Date.now();
+
+      if (stillValid) {
+        dispatch({ type: AuthActionTypes.SET_AUTHENTICATED });
+      } else {
+        await dispatch(logoutUser());
+      }
+    } catch {
+      await dispatch(logoutUser());
+    }
+  };
+
+// Refresh
+interface RefreshRequestAction {
+  type: AuthActionTypes.REFRESH_REQUEST,
+
+}
+interface RefreshSuccessAction {
+  type: AuthActionTypes.REFRESH_SUCCESS;
+  payload: {token: string}; 
+}
+
+interface RefreshFailureAction {
+  type: AuthActionTypes.REFRESH_FAILURE,
+  payload: {error: string};
+};
+
+export const refreshSuccess = (token: string) => ({
+  type: AuthActionTypes.REFRESH_SUCCESS,
+  payload: token,
+});

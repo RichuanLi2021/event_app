@@ -1,26 +1,26 @@
 import { Router } from "express";
 import * as userController from "../controllers/user.controller";
-import { allowSelfOrAdmin } from "../middleware/user.idChecks";
-import { routeProtector } from "../../../global_middleware/route.protect";
-import { authorize } from "../../../global_middleware/authorize";
+import { authenticate } from "../../../global_middleware/authenticator";
+import { authorize, allowSelfOrAdmin } from "../../../global_middleware/authorizor";
+import { ADMIN_ROLE, USER_ROLES } from "../roles";
 
 const userRouter = Router();
 const adminRouter = Router();
 
-userRouter.use(routeProtector);
-adminRouter.use(routeProtector);
+userRouter.use(authenticate, authorize(...USER_ROLES));
 
 // user & organizer or Admin
 userRouter.route('/:id')
-          .get(allowSelfOrAdmin, userController.getUser)
-          .put(allowSelfOrAdmin, userController.updateUser)
-          .delete(allowSelfOrAdmin, userController.deleteUser)
+          .get(userController.getUser)
+          .put(userController.updateUser)
+          .delete(userController.deleteUser)
 
 // Admin
-adminRouter.use(authorize('ADMIN'));
+adminRouter.use(authenticate, allowSelfOrAdmin);
+adminRouter.use(authorize(...ADMIN_ROLE));
 
 adminRouter.route('/')
-           .get(userController.getAllUsers)
+           .get(userController.getALL)
            .delete(userController.deleteSomeUsers)
 
 export {userRouter, adminRouter};

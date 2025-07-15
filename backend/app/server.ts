@@ -4,7 +4,10 @@ import cors from "cors";
 import morgan from "morgan";
 import { env } from "./config/env";
 import connectDB from "./config/database";
-import apiRouter from ".";
+import apiRouter from "./index";
+import cookieParser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swagger";
 
 dotenv.config();
 const app = express();
@@ -19,7 +22,10 @@ if (env.NODE_ENV !== "test") {
   app.use(morgan("dev"));
 }
 
+app.use(cookieParser());   
 app.use("/api", apiRouter);
+
+// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 (async () => {
   try {

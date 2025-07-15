@@ -1,28 +1,33 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {
-  isRouteErrorResponse,
-  Outlet,
-} from "react-router";
+import "./app.css";
+import bootstrapHref from 'bootstrap/dist/css/bootstrap.min.css?url';
+import appCssHref from './app.css?url';
+import { isRouteErrorResponse, Outlet } from "react-router";
 
 import type { Route } from "./+types/root";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import "./app.css";
 import { Provider } from 'react-redux';
-import store from './redux/store';
+import { store, persistor } from './redux/store';
+import { PersistGate } from "redux-persist/lib/integration/react";
+import { Links, Scripts, ScrollRestoration } from "react-router-dom";
 
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-];
+export function links() {
+  return [
+    { rel: "preconnect", href: "https://fonts.googleapis.com" },
+    {
+      rel: "preconnect",
+      href: "https://fonts.gstatic.com",
+      crossOrigin: "anonymous",
+    },
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    },
+    { rel: "stylesheet", href: bootstrapHref },
+    { rel: "stylesheet", href: appCssHref },
+  ];
+}
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
@@ -55,9 +60,20 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <Outlet />
-      <ToastContainer position="top-right" autoClose={3000}/>
-    </Provider>
-  )
+    <html lang="en">
+      <head>
+        <Links />
+      </head>
+      <body>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <Outlet />
+            <ToastContainer position="top-right" autoClose={3000} />
+          </PersistGate>
+        </Provider>
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
 }

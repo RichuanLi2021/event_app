@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Divider from '@mui/material/Divider';
+import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import { toast } from 'react-toastify';
@@ -58,6 +59,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           email: '',
           phone: '',
           password: '',
+          role: '',
           confirmPassword: '',
           receiveUpdates: false
         }}
@@ -92,6 +94,28 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     error={touched.email && Boolean(errors.email)}
                     helperText={<ErrorMessage name="email" />}
                   />
+                )}
+              </Field>
+            </Box>
+
+            {/* Role */}
+            <Box mb={2}>
+              <Field name="role">
+                {({ field }: any) => (
+                  <TextField
+                    {...field}
+                    select
+                    fullWidth
+                    label="I am an"
+                    error={touched.role && Boolean(errors.role)}
+                    helperText={<ErrorMessage name="role" />}
+                  >
+                    <MenuItem value="" disabled>
+                      <em>Select role</em>
+                    </MenuItem>
+                    <MenuItem value="USER">USER</MenuItem>
+                    <MenuItem value="ORGANIZER">ORGANIZER</MenuItem>
+                  </TextField>
                 )}
               </Field>
             </Box>

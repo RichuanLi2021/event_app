@@ -3,6 +3,7 @@ export interface SignupValues {
   email: string;
   phone?: string;
   password: string;
+  role: string;
   confirmPassword: string;
   receiveUpdates?: boolean;
 };

@@ -18,8 +18,8 @@ install:
   script:
     - echo "📦 Installing root, frontend, and backend deps"
     - npm install
-    - cd frontend  && rm -rf node_modules package-lock.json && npm ci
-    - cd ../backend && rm -rf node_modules package-lock.json && npm ci
+    - cd frontend  && rm -rf node_modules package-lock.json && npm install
+    - cd ../backend && rm -rf node_modules package-lock.json && npm install
   # No artifacts are needed here
 
 test:
@@ -27,8 +27,8 @@ test:
   image: node:20
   script:
     - echo "🧪 Running type-checks / tests"
-    - cd frontend  && npm run typecheck || true  && npm test || true
-    - cd ../backend && npm run typecheck || true && npm test || true
+    - cd frontend  && npm run typecheck || true
+    - cd ../backend && npm test || true
 
 build:
   stage: build

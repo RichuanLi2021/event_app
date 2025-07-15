@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: backend-service
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.2
+      - key: MONGODB_URI
+        value: mongodb://127.0.0.1:27017/event-booking
+      - key: JWT_SECRET
+        value: a348459ed3f3c32e614e4c3e3c453e1379309c05d569b7c07ebf75fcf37df833
+      - key: JWT_REFRESH_SECRET
+        value: 72bcf59a7530c568cb4c005b19a3b31fe66a16e2678e3b4e459a739a278a7272
+
+  - type: web
+    name: frontend-service
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.2
+      - key: VITE_BACKEND_URL
+        value: http://localhost:5174/
+      - key: VITE_API_PREFIX
+        value: /api

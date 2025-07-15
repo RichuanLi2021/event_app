@@ -3,6 +3,7 @@ import { FaSearch, FaMapMarkerAlt, FaBars } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "~/redux/actions/auth/Auth-actionCreators";
 import { useAppDispatch, useAppSelector } from "~/redux/hooks";
+import { Dropdown, Image } from "react-bootstrap";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -12,13 +13,16 @@ export default function Header() {
   const dispatch = useAppDispatch();
   const isUserLoggedIn = useAppSelector(state => state.auth.isAuthenticated);
 
+  const currentUser = useAppSelector(state => state.auth.currentUser);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   // Reset user state to null
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate('/');
   }
 
-  {/* TO DO */}
+  {/* TO DO */ }
   const handleSearch = () => {
     if (searchTerm.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
@@ -30,13 +34,16 @@ export default function Header() {
 
   const handleLocationClick = () => {
     setLocationIndex((prevIndex) => (prevIndex + 1) % mockLocations.length);
-};
+  };
 
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-2 shadow-sm bg-white">
       {/* Left: Logo */}
-      <div className="text-orange-500 font-bold text-xl sm:text-2xl whitespace-nowrap mr-2">
+      <div
+        className="text-orange-500 font-bold text-xl sm:text-2xl whitespace-nowrap mr-2 cursor-pointer"
+        onClick={() => navigate('/')}
+      >
         eventflow
       </div>
 
@@ -86,27 +93,51 @@ export default function Header() {
 
       {/* Right: Desktop Nav */}
       <nav
-        className={`${
-          menuOpen ? "flex" : "hidden"
-        } sm:flex items-center space-x-3 text-sm text-black ml-4 w-full sm:w-auto`}
+        className={`${menuOpen ? "flex" : "hidden"
+          } sm:flex items-center space-x-3 text-sm text-black ml-4 w-full sm:w-auto`}
       >
-        <button className="hover:bg-gray-100 px-2 py-1 rounded transition">
-          Help Center ▾
+        <button
+          onClick={() => navigate('/help-center')}
+          className="hover:bg-gray-100 px-2 py-1 rounded transition">
+          Help Center
         </button>
 
-        {isUserLoggedIn ? 
-          <button 
-            onClick={handleLogout}
-            className="hover:bg-gray-100 px-2 py-1 rounded transition">
-            Logout
-          </button>
-          : 
-          <button 
+        {isUserLoggedIn ? (
+          <Dropdown align="end" show={showDropdown} onToggle={setShowDropdown}>
+            <Dropdown.Toggle
+              as="span"
+              style={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                border: "none",
+                background: "none",
+                boxShadow: "none",
+              }}
+            >
+              <Image
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  currentUser?.name || "U"
+                )}&background=random&rounded=true&size=32`}
+                roundedCircle
+                width={32}
+                height={32}
+                alt="profile"
+              />
+              <span style={{ marginLeft: 8 }}>{currentUser?.name}</span>
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => navigate('/account')}>Account Setting</Dropdown.Item>
+              <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        ) : (
+          <button
             onClick={() => navigate('/login')}
             className="hover:bg-gray-100 px-2 py-1 rounded transition">
             Login
           </button>
-        }
+        )}
       </nav>
     </header>
   );
