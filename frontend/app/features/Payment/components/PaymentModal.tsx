@@ -41,6 +41,7 @@ const formatEventData = (eventData: any) => {
     }
   }
   
+  // Use provided time if available, otherwise use extracted time
   if (eventData.time && eventData.time !== formattedTime) {
     formattedTime = eventData.time;
   }
@@ -324,7 +325,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             }}>
               📅 {formattedEvent.date}<br/>
               🕐 {formattedEvent.time}<br/>
-              �� {formattedEvent.location}
+              📍 {formattedEvent.location}
             </div>
             <div style={{
               fontSize: '2rem',

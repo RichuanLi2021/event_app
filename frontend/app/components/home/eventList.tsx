@@ -34,6 +34,7 @@ export const EventList = () => {
           {events.map((event) => (
             <EventCard
               key={event._id}
+              id={event._id} 
               title={event.title}
               date={event.date.toString()}
               time={new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
