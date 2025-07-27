@@ -5,7 +5,8 @@ export default [
     index("./pages/Home.tsx"),
     route("search", "./pages/Search.tsx"),
     route("help-center", "./pages/HelpCenter.tsx"), 
-    route("event-details", "./pages/EventDetails.tsx"),
+    route("events/:id", "./pages/EventDetails.tsx"),
+    route("seat-selection", "./pages/SeatSelectionPage.tsx"),
     route("account", "./pages/Account.tsx")
   ]),
 
