@@ -10,8 +10,14 @@ export const EventCard = ({ id, title, date, time, location, imageUrl, onClick }
     if (onClick) {
       onClick(title);
     } else {
-      const eventIdentifier = id || encodeURIComponent(title);
-      navigate(`/events/${eventIdentifier}`);
+      // Backward compatibility: use new route if ID available, fallback to original
+      if (id) {
+        const eventIdentifier = id || encodeURIComponent(title);
+        navigate(`/events/${eventIdentifier}`);
+      } else {
+        // Keep original navigation as fallback
+        navigate("/event-details");
+      }
     }
   };
 
