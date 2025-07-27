@@ -1,6 +1,9 @@
+import { useSelector } from 'react-redux';
+import type { AppState } from '../../../redux/store';
+import { toast } from 'react-toastify';
+
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import PaymentModal from '../../Payment/components/PaymentModal';
+import { useNavigate } from 'react-router-dom';
 
 const rows = [
   { label: 'A', count: 10 },
@@ -8,8 +11,8 @@ const rows = [
   { label: 'C', count: 14 },
   { label: 'D', count: 16 },
   { label: 'E', count: 18 },
-  { label: 'F', count: 20 },
-  { label: 'G', count: 20 },
+  { label: 'F', count: 20 }, // VIP
+  { label: 'G', count: 20 }, // VIP 
 ];
 
 const bookedSeats = ['B11', 'C4', 'D7', 'F4', 'F9', 'G2', 'G3'];
@@ -23,23 +26,21 @@ const seatStatusColors = {
 
 export default function SeatMap() {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const navigate = useNavigate();
-  
-  const location = useLocation();
-  const eventInfo = location.state?.eventInfo || {
-    title: 'NYC Music Fest',
-    date: '10th March, 2025',
-    time: '10:00 AM',
-    location: 'Central Park, NYC'
-  };
+  const isAuthenticated = useSelector((state: AppState) => state.auth.isAuthenticated);
 
   const toggleSeat = (seatId: string, isVIP: boolean) => {
-    if (bookedSeats.includes(seatId)) return;
-    setSelectedSeats(prev =>
-      prev.includes(seatId)
-        ? prev.filter(s => s !== seatId)
-        : [...prev, seatId]
+    if (!isAuthenticated) {
+    toast.info("You need to log in to select a seat."); 
+    return;
+  }
+
+  if (bookedSeats.includes(seatId)) return;
+
+  setSelectedSeats(prev =>
+    prev.includes(seatId)
+      ? prev.filter(s => s !== seatId)
+      : [...prev, seatId]
     );
   };
 
@@ -50,30 +51,20 @@ export default function SeatMap() {
     return sum + getSeatPrice(isVIP);
   }, 0);
 
-  const paymentEventData = {
-    name: eventInfo.title,
-    date: eventInfo.date,
-    time: eventInfo.time,
-    location: eventInfo.location,
-    price: totalPrice
-  };
 
-  const handleConfirmBooking = () => {
-    if (selectedSeats.length === 0) return;
-    console.log("Proceed with", selectedSeats);
-    setShowPaymentModal(true);
-  };
 
   return (
     <div className="text-center space-y-6 px-2 sm:px-4">
       <h2 className="text-2xl sm:text-3xl font-bold">Select Your Seat</h2>
 
+      {/* Stage Shape */}
       <div className="flex justify-center mt-2">
         <div className="w-52 sm:w-64 h-16 sm:h-20 bg-gray-200 rounded-t-[60%] shadow-inner flex items-end justify-center">
           <span className="text-md sm:text-lg font-semibold pb-2">STAGE</span>
         </div>
       </div>
 
+      {/* Seat Map */}
       <div className="flex flex-col items-center space-y-4 pt-4 overflow-x-hidden">
         {rows.map((row, rowIndex) => {
           const curve = (rowIndex - rows.length / 2) * 3;
@@ -124,6 +115,7 @@ export default function SeatMap() {
         })}
       </div>
 
+      {/* Legend */}
       <div className="flex justify-center flex-wrap gap-3 text-sm pt-6">
         <div><span className={`inline-block w-4 h-4 rounded mr-1 ${seatStatusColors.available}`}></span>Available</div>
         <div><span className={`inline-block w-4 h-4 rounded mr-1 ${seatStatusColors.selected}`}></span>Selected</div>
@@ -131,22 +123,17 @@ export default function SeatMap() {
         <div><span className={`inline-block w-4 h-4 rounded mr-1 ${seatStatusColors.booked}`}></span>Booked</div>
       </div>
 
+      {/* Price and Button */}
       <div className="pt-4 text-lg font-semibold">
         Total: ₹{totalPrice}
       </div>
       <button
         className="mt-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded transition disabled:opacity-50"
         disabled={selectedSeats.length === 0}
-        onClick={handleConfirmBooking}
+        onClick={() => console.log("Proceed with", selectedSeats)}
       >
         Confirm Booking
       </button>
-
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        eventData={paymentEventData}
-      />
     </div>
   );
 }
