@@ -30,10 +30,10 @@ export default function SeatSelectionPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <SeatMap />
       
-      {/* Add payment button below SeatMap */}
+      {/* Add payment button below SeatMap - matching Confirm Booking button style */}
       <div className="mt-6 text-center">
         <button
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
+          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded transition"
           onClick={() => setShowPaymentModal(true)}
         >
           Proceed to Payment
