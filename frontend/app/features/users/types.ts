@@ -1,4 +1,4 @@
-export type SideBarSection = 'User Information' | 'Event Bookings' | 'Calendar' | 'Chat Room';
+export type SideBarSection = 'User Information' | 'Event Bookings' | 'Calendar' | 'Chat Room' | 'Payment';
 
 export interface ProfileMainContentProps {
   section: SideBarSection;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import PaymentModal from '../../users/components/payment/PaymentModal';
+import PaymentModal from '../../Payment/components/PaymentModal';
 
 const rows = [
   { label: 'A', count: 10 },
