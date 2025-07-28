@@ -11,6 +11,7 @@ import {
 } from "redux-persist";
 import { persistStore } from 'redux-persist';
 import { validateToken } from './actions/auth/Auth-actionCreators';
+import { eventsCacheApi } from '~/features/events/services/eventApi';
 
 export const store = configureStore({
   reducer: rootReducer,
@@ -19,7 +20,8 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(logger),
+    }).concat(logger)
+      .concat(eventsCacheApi.middleware),
   devTools: process.env.NODE_ENV === 'development'
 });
 

@@ -3,12 +3,12 @@ import { Card, CardContent, Typography } from '@mui/material';
 import { type ProfileMainContentProps } from '../types';
 import AboutMe from './Account_Info';
 import EventBookings from '~/features/events/components/EventBookings';
-import CalendarPage from '~/features/calendar/components/CalendarPage';
+// import CalendarPage from '~/features/calendar/components/CalendarPage';
 
 export default function ProfileMainContent({ section }: ProfileMainContentProps) {
   
   if (section === 'Calendar') {
-    return <CalendarPage />;
+    // return <CalendarPage />;
   }
 
   if (section === 'Chat Room') {

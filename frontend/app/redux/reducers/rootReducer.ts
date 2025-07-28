@@ -4,6 +4,7 @@ import eventReducer from './eventReducer/eventReducer';
 import authReducer from './authReducer/authReducer';
 import accountReducer from './accountReducer/accountReducer';
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
+import { eventsCacheApi } from '~/features/events/services/eventApi';
 
 const createNoopStorage = () => ({
   getItem(_key: string) {
@@ -37,6 +38,9 @@ const eventsPersistConfig = {
 export const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
   events: persistReducer(eventsPersistConfig, eventReducer),
-  account: accountReducer
+  account: accountReducer,
   // other reducers
+
+  // mount the RTK-Query cache
+  [eventsCacheApi.reducerPath]: eventsCacheApi.reducer
 });

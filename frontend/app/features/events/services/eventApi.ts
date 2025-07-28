@@ -1,27 +1,50 @@
 import { api } from "~/api/central-axios";
 import type { CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UserEvents } from "../types";
 
-export async function fetchAllEvents(): Promise<Events> {
-    try {
-        const { data } = await api.get<Events>("/events");
-        return data;
-    } catch (err: any) {
-        const status = err.response?.status ?? "network";
-        throw new Error(`Fetch events failed (${status})`);
-    }
-}
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { axiosBaseQuery } from "~/api/axiosBaseQuery";
 
-export async function fetchAllEventsByUsrId(usrId: string): Promise<UserEvents> {
-    try {
-        const url = `/events/user/${usrId}`;
-        console.log("fetchAllEventsByUsrId -> ", url);
-        const { data } = await api.get<UserEvents>(`/events/user/${usrId}`);
-        return data;
-    } catch (err: any) {
-        const status = err.response?.status ?? "network";
-        throw new Error(`Fetch events failed (${status})`);
-    }
-} 
+// Added client-caching for two main endpoints
+export const eventsCacheApi = createApi({
+  reducerPath: "eventsCacheApi",
+  baseQuery: axiosBaseQuery(),
+  tagTypes: ["Events", "UserEvents"],
+  endpoints: (build) => ({
+    /** GET /events  -> cached under 'Events/LIST' */
+    listEvents: build.query<Events, void>({
+      query: () => ({ url: "/events", method: "GET" }),
+      providesTags: [{ type: "Events", id: "LIST" }],
+    }),
+
+    /** GET /events/user/:id  -> cached per‑user */
+    listEventsByUser: build.query<UserEvents, string>({
+      query: (usrId) => ({ url: `/events/user/${usrId}`, method: "GET" }),
+      providesTags: (_r, _e, usrId) => [{ type: "UserEvents", id: usrId }],
+    }),
+  }),
+});
+
+// export async function fetchAllEvents(): Promise<Events> {
+//     try {
+//         const { data } = await api.get<Events>("/events");
+//         return data;
+//     } catch (err: any) {
+//         const status = err.response?.status ?? "network";
+//         throw new Error(`Fetch events failed (${status})`);
+//     }
+// }
+
+// export async function fetchAllEventsByUsrId(usrId: string): Promise<UserEvents> {
+//     try {
+//         const url = `/events/user/${usrId}`;
+//         console.log("fetchAllEventsByUsrId -> ", url);
+//         const { data } = await api.get<UserEvents>(`/events/user/${usrId}`);
+//         return data;
+//     } catch (err: any) {
+//         const status = err.response?.status ?? "network";
+//         throw new Error(`Fetch events failed (${status})`);
+//     }
+// } 
 
 export async function fetchEventById(id: string): Promise<TheEvent> {
     try{
@@ -78,3 +101,9 @@ export async function deleteEvent(id: string): Promise<DeletedEvent> {
 }
 
 // Admin
+
+// Auto‑generated hooks for React components
+export const {
+  useListEventsQuery,
+  useListEventsByUserQuery,
+} = eventsCacheApi;

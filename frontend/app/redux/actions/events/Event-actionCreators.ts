@@ -12,6 +12,8 @@ import type {
 import { type AppState } from "~/redux/store";
 import * as eventApi from "~/features/events/services/eventApi";
 
+import { eventsCacheApi } from "~/features/events/services/eventApi";
+
 export const fetchAllEvents = (): ThunkAction<
     Promise<Events>, AppState, unknown, EventActions
 > => {
@@ -20,7 +22,10 @@ export const fetchAllEvents = (): ThunkAction<
             type: EventActionTypes.FETCH_EVENTS_REQUEST
         })
         try {
-            const events = await eventApi.fetchAllEvents();
+            // Optimization: call cache Api instead
+            const events = await dispatch(
+                eventsCacheApi.endpoints.listEvents.initiate()
+            ).unwrap();
             dispatch({
                 type: EventActionTypes.FETCH_EVENTS_SUCCESS,
                 payload: events
@@ -46,7 +51,10 @@ export const fetchAllEventsById = (usrId: string): ThunkAction<
             payload: { id: usrId }
         })
         try {
-            const usrEvents = await eventApi.fetchAllEventsByUsrId(usrId);
+            // Optimization: Use cache api instead
+            const usrEvents = await dispatch(
+                eventsCacheApi.endpoints.listEventsByUser.initiate(usrId)
+            ).unwrap();
             dispatch({
                 type: EventActionTypes.FETCH_EVENTS_BY_ID_SUCCESS,
                 payload: usrEvents
