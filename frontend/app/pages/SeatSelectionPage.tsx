@@ -2,8 +2,50 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import SeatMap from '../features/events/components/SeatMap';
 import PaymentModal from '../features/Payment/components/PaymentModal';
+import { useLocation, useParams } from 'react-router-dom';
+import { useAppSelector } from '../redux/hooks';
+import { useEffect, useState } from 'react';
+import { api } from '../api/central-axios';
+import type { TheEvent } from '../features/events/types';
 
 export default function SeatSelectionPage() {
+  const location = useLocation();
+  const { eventTitle } = useParams<{ eventTitle: string }>();
+  const events = useAppSelector((state) => state.events.events);
+  const [eventInfo, setEventInfo] = useState<TheEvent | undefined>(
+    location.state?.eventInfo as TheEvent | undefined
+  );
+  
+  useEffect(() => {
+    const fetchEvent = async () => {
+      if (!eventInfo && eventTitle) {
+        try {
+          // First try to find in Redux by title
+          const foundEvent = events.find((ev) => {
+            const eventTitleSlug = ev.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '');
+            
+            return eventTitleSlug === eventTitle;
+          });
+          
+          if (foundEvent) {
+            setEventInfo(foundEvent);
+          } else {
+            // If not in Redux, try to find by title in all events
+          }
+        } catch (error) {
+          console.error('Error fetching event:', error);
+        }
+      }
+    };
+    
+    fetchEvent();
+  }, [eventTitle, eventInfo, events]);
+  
+
+  
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const location = useLocation();
   
@@ -45,6 +87,7 @@ export default function SeatSelectionPage() {
         onClose={() => setShowPaymentModal(false)}
         eventData={paymentEventData}
       />
+      <SeatMap eventInfo={eventInfo} />
     </div>
   );
 }

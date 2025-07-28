@@ -1,21 +1,52 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EventCard } from './eventCard';
 import { useAppDispatch, useAppSelector } from '~/redux/hooks';
 import { fetchAllEvents } from '~/redux/actions/events/Event-actionCreators';
+import { api } from "~/api/central-axios";
 
-export const EventList = () => {
+interface EventListProps {
+  selectedCategory: string;
+}
+
+export const EventList = ({ selectedCategory }: EventListProps) => {
   const dispatch = useAppDispatch();
+  const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Select pieces of state
   const { 
     events: events, 
-    loading, 
+    loading: eventsLoading, 
     error 
   } = useAppSelector(
     (state) => state.events
   );
 
-  // Fetch on mount
+  // Fetch events by category when category changes
+  useEffect(() => {
+    const fetchEventsByCategory = async () => {
+      setLoading(true);
+      try {
+        if (selectedCategory === "All") {
+          // Use existing events from Redux state
+          setFilteredEvents(events);
+        } else {
+          // Fetch events by category from backend
+          const response = await api.get(`/events/categories/${selectedCategory}`);
+          setFilteredEvents(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch events by category:", error);
+        setFilteredEvents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEventsByCategory();
+  }, [selectedCategory, events]);
+
+  // Fetch all events on mount
   useEffect(() => {
     dispatch(fetchAllEvents());
   }, [dispatch]);
@@ -31,15 +62,19 @@ export const EventList = () => {
 
       {!loading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <EventCard
               key={event._id}
               id={event._id} 
               title={event.title}
-              date={event.date.toString()}
+              date={new Date(event.date).toLocaleDateString('en-US', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+              })}
               time={new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               location={event.location}
-              imageUrl={(event as any).imageUrl || '/placeholder/event.png'}
+              imageUrl={(event as any).imageUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80'}
             />
           ))}
         </div>

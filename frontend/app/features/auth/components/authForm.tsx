@@ -32,7 +32,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setTimeout(() => navigate('/login'), 2500);
   } catch (err) {
     toast.error('Signup failed');
-    console.log(err)
+    
   } finally {
     setSubmitting(false);
   }

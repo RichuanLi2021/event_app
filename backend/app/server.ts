@@ -38,6 +38,8 @@ app.get("/", (_req, res) => {
 
 app.use("/api", apiRouter);
 
+
+
 // app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 (async () => {

@@ -27,11 +27,8 @@ export async function getAllEventsByUserId(
 ) {
   try {
     const userEvents = await EventService.getAllByUsrId(_req.params.userId);
-    console.log(`User: ${_req.params.userId} has the following events: \n
-      ${userEvents}`);
     res.status(200).json(userEvents);
   } catch (err) {
-    console.log("Fetching events for", _req.params.userId);
     next(createHttpError(500, "Failed to fetch events"))
   }
 }
@@ -62,6 +59,28 @@ export async function getEventById(
     res.status(200).json(event);
   } catch (err) {
     next(createHttpError(500, "Failed to fetch event"));
+  }
+}
+
+// GET http://localhost:5174/api/events/search?q=query&location=location
+export async function searchEvents(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const query = req.query.q as string;
+    const location = req.query.location as string;
+    
+    if (!query && !location) {
+      res.status(200).json([]);
+      return;
+    }
+    
+    const events = await EventService.searchEvents(query || "", location);
+    res.status(200).json(events);
+  } catch (err) {
+    next(createHttpError(500, "Failed to search events"));
   }
 }
 

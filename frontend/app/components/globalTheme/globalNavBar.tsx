@@ -4,13 +4,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { logoutUser } from "~/redux/actions/auth/Auth-actionCreators";
 import { useAppDispatch, useAppSelector } from "~/redux/hooks";
 import { Dropdown, Image } from "react-bootstrap";
-import type { EventCardProps } from '~/features/events/types';
 
 const GlobalNavBar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<EventCardProps[]>([]);
-  const [events, setEvents] = useState<EventCardProps[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState("Location");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -25,25 +24,26 @@ const GlobalNavBar = () => {
     navigate('/');
   }
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
-    try {
-      const res = await fetch(`/api/events/search?q=${encodeURIComponent(searchTerm)}`);
-      const data = await res.json();
-      setSearchResults(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setSearchResults([]);
+  const handleSearch = () => {
+    // Allow search if there's a search term, even with "Location" selected
+    if (!searchTerm.trim() && selectedLocation === "Location") {
+      // Show all events when no search term and "Location" is selected
+      navigate('/search');
+      return;
     }
-  };
+    
+    const searchParams = new URLSearchParams();
+    if (searchTerm.trim()) {
+      searchParams.append('query', searchTerm.trim());
+    }
+    if (selectedLocation !== "Location") {
+      searchParams.append('location', selectedLocation);
+    }
+    
+    navigate(`/search?${searchParams.toString()}`);
+  }
 
-  const mockLocations = ["Nova Scotia", "Toronto", "New York", "Vancouver"];
-  const [locationIndex, setLocationIndex] = useState(0);
-  const [selectedLocation, setSelectedLocation] = useState("Location");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const handleLocationClick = () => {
-    setLocationIndex((prevIndex) => (prevIndex + 1) % mockLocations.length);
-  };
+  const mockLocations = ["Location", "Nova Scotia", "Toronto", "New York", "Vancouver"];
 
   return (
     <>

@@ -5,9 +5,9 @@ export default [
     index("./pages/Home.tsx"),
     route("search", "./pages/Search.tsx"),
     route("help-center", "./pages/HelpCenter.tsx"), 
-    route("event-details", "./pages/EventDetails.tsx"),
-    route("events/:eventId", "./pages/EventDetails.tsx", { id: "event-dynamic" }),
-    route("seat-selection", "./pages/SeatSelectionPage.tsx"),
+    route("event-details/:eventTitle", "./pages/EventDetails.tsx"),
+    route("seat-selection/:eventTitle?", "./pages/SeatSelectionPage.tsx"),
+    route("calendar", "./features/calendar/components/CalendarPage.tsx"),
     route("account", "./pages/Account.tsx")
   ]),
 
