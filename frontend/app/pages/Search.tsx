@@ -75,7 +75,7 @@ export default function SearchPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-5 py-4">
-      <h2 className="text-2xl font-semibold mb-6">
+      <h2 className="text-lg font-medium mb-6">
         {query.trim() || location ? (
           <>
             Search Results

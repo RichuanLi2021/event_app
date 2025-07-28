@@ -2,7 +2,7 @@ import { useSelector } from 'react-redux';
 import type { AppState } from '../../../redux/store';
 import { toast } from 'react-toastify';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { TheEvent } from '../types';
 
@@ -27,9 +27,10 @@ const seatStatusColors = {
 
 interface SeatMapProps {
   eventInfo?: TheEvent;
+  onSeatsChange?: (selectedSeats: string[], totalPrice: number) => void;
 }
 
-export default function SeatMap({ eventInfo }: SeatMapProps) {
+export default function SeatMap({ eventInfo, onSeatsChange }: SeatMapProps) {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const navigate = useNavigate();
   const isAuthenticated = useSelector((state: AppState) => state.auth.isAuthenticated);
@@ -116,6 +117,13 @@ export default function SeatMap({ eventInfo }: SeatMapProps) {
     return sum + getSeatPrice(false);
   }, 0);
 
+  // Notify parent component when seats or price changes
+  useEffect(() => {
+    if (onSeatsChange) {
+      onSeatsChange(selectedSeats, totalPrice);
+    }
+  }, [selectedSeats, totalPrice, onSeatsChange]);
+
 
 
   return (
@@ -188,17 +196,10 @@ export default function SeatMap({ eventInfo }: SeatMapProps) {
         <div><span className={`inline-block w-4 h-4 rounded mr-1 ${seatStatusColors.booked}`}></span>Booked</div>
       </div>
 
-      {/* Price and Button */}
+      {/* Price Display */}
       <div className="pt-4 text-lg font-semibold">
         Total: {totalPrice === 0 ? 'Free' : `$${totalPrice}`}
       </div>
-      <button
-        className="mt-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded transition disabled:opacity-50"
-        disabled={selectedSeats.length === 0}
-        onClick={() => {/* TODO: Implement booking logic */}}
-      >
-        Confirm Booking
-      </button>
     </div>
   );
 }
