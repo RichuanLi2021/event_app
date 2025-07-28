@@ -29,7 +29,7 @@ export interface SignupUser {
   email: string;
   password: string;
   phone?: string;
-  role?: 'USER' | 'ORGANIZER';
+  role?: 'USER' | 'ORGANIZER' | 'ADMIN';
   receiveUpdates?: boolean;
 }
 export type SigninUser = Pick<User, 'email' | 'password'>;

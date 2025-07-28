@@ -18,7 +18,7 @@ export const updateAccount = (
                 type: AccountActionTypes.UPDATE_ACCOUNT_SUCCESS,
                 payload: updated 
             })
-            console.log("updated user is: ", updated);
+            console.log("Updated user is: ", updated);
             return updated;
         } catch (error: any) {
             dispatch({

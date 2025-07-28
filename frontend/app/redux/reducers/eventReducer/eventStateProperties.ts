@@ -3,7 +3,7 @@ import type { Events, TheEvent, UserEvents } from "~/features/events/types";
 export interface EventState {
   events: Events;
   selectedEvent: TheEvent | null;
-  currentUserEvents: UserEvents
+  currentUserEvents: UserEvents | [];
   loading: boolean;
   updating: boolean;
   deleting: boolean;

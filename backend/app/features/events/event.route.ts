@@ -5,6 +5,7 @@ import { authorize } from "../../global_middleware/authorizor";
 import { ORGANIZER_ROLE, ADMIN_ROLE} from "../users/roles";
 
 const publicEventRouter = Router();
+
 const privateEventRouter = Router();
 privateEventRouter.use(authenticate);
 
@@ -18,11 +19,12 @@ privateEventRouter.get("/:id", eventController.getEventById);
 
 // Organizer
 const organizerEventRouter = Router();
-organizerEventRouter.use(authenticate, authorize(...ORGANIZER_ROLE));
-
+organizerEventRouter
+  .use(authenticate, authorize(...ORGANIZER_ROLE));
 organizerEventRouter
   .post("/categories/:category/:eventName", eventController.createEventByCategory);
-organizerEventRouter.route("/:id")
+organizerEventRouter
+  .route("/:id")
   .put(eventController.updateEvent)
   .delete(eventController.deleteEventById);
 

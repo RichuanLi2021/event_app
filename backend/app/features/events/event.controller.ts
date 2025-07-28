@@ -27,6 +27,11 @@ export async function getAllEventsByUserId(
 ) {
   try {
     const userEvents = await EventService.getAllByUsrId(_req.params.userId);
+    if(!userEvents || userEvents.length === 0) {
+      console.log("No relevant events found with the provided user ID.")
+      res.status(200).send([]);
+      return;
+    }
     console.log(`User: ${_req.params.userId} has the following events: \n
       ${userEvents}`);
     res.status(200).json(userEvents);

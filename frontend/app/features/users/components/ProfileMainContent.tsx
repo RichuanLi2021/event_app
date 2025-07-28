@@ -28,6 +28,12 @@ export default function ProfileMainContent({ section }: ProfileMainContentProps)
     );
   }
 
+  // if (section === 'Payment') {
+  //   return (
+  //     <Payment/>
+  //   );
+  // }
+
   if (section === 'Event Bookings') {
     return (
       <EventBookings/>

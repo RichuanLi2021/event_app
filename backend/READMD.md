@@ -20,6 +20,8 @@ $ openssl rsa -in rs256.key.pem -pubout -out rs256.pub.pem
 !!! DO NOT COMMIT YOUR PRIVATE KEY TO THE REPO, STORE IT SAFELY.
 
 ## events and role workflow
+(https://lrcc1996.atlassian.net/wiki/pages/resumedraft.action?draftId=9961473&draftShareId=d06d6a42-bc57-4ebd-8081-536a8d63ebfe)
+
 User, Organizer, and Admin
 
 1. An Event starts in status of 'Pending' when it is created by Organizer.
