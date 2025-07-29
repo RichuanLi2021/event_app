@@ -21,11 +21,33 @@ export class EventService {
   }
 
   static async getByCategory(category: string) {
-    return await EventModel.find({ category }).exec();
+    const categoryRegex = new RegExp(category, 'i'); // case-insensitive search
+    return await EventModel.find({ category: categoryRegex }).exec();
   }
 
   static async getOne(id: string) {
     return await EventModel.findById(id).exec();
+  }
+
+  // search events
+  static async searchEvents(query: string, location?: string) {
+    const searchRegex = new RegExp(query, 'i'); // case-insensitive search
+    
+    const searchQuery: any = {
+      $or: [
+        { title: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex },
+        { location: searchRegex }
+      ]
+    };
+
+    // Add location filter if provided
+    if (location && location !== "All Locations") {
+      searchQuery.location = new RegExp(location, 'i');
+    }
+
+    return await EventModel.find(searchQuery).sort({ createdAt: -1 }).exec();
   }
 
   // organizer

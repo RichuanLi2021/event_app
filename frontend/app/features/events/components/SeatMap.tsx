@@ -2,8 +2,9 @@ import { useSelector } from 'react-redux';
 import type { AppState } from '../../../redux/store';
 import { toast } from 'react-toastify';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { TheEvent } from '../types';
 
 const rows = [
   { label: 'A', count: 10 },
@@ -24,7 +25,12 @@ const seatStatusColors = {
   booked: 'bg-slate-400 text-white',
 };
 
-export default function SeatMap() {
+interface SeatMapProps {
+  eventInfo?: TheEvent;
+  onSeatsChange?: (selectedSeats: string[], totalPrice: number) => void;
+}
+
+export default function SeatMap({ eventInfo, onSeatsChange }: SeatMapProps) {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const navigate = useNavigate();
   const isAuthenticated = useSelector((state: AppState) => state.auth.isAuthenticated);
@@ -44,12 +50,79 @@ export default function SeatMap() {
     );
   };
 
-  const getSeatPrice = (isVIP: boolean) => isVIP ? 100 : 50;
+  const getSeatPrice = (isVIP: boolean) => {
+    if (!eventInfo) {
+      return isVIP ? 100 : 50; // Default prices if no event info
+    }
+    
+    const costs = eventInfo.costs || '';
+    
+    // Check if the event is free (various formats)
+    const isFree = costs.toLowerCase() === 'free' || 
+                   costs === '0' || 
+                   costs === '$0' ||
+                   costs === 'Free' ||
+                   costs === 'FREE';
+    
+    if (isFree) {
+      return 0;
+    }
+    
+    // If costs contains a dollar sign, extract the number
+    if (costs.includes('$')) {
+      const numericValue = costs.replace(/[^0-9]/g, '');
+      const basePrice = parseInt(numericValue) || 0;
+      return basePrice; // Same price for all seats
+    }
+    
+    // If costs is just a number (without currency symbol)
+    const numericValue = costs.replace(/[^0-9]/g, '');
+    const basePrice = parseInt(numericValue) || 0;
+    
+    return basePrice; // Same price for all seats
+  };
+  
+  const getSeatPriceDisplay = (isVIP: boolean) => {
+    if (!eventInfo) {
+      return isVIP ? '$100' : '$50';
+    }
+    
+    const costs = eventInfo.costs || '';
+    
+    // Check if the event is free (various formats)
+    const isFree = costs.toLowerCase() === 'free' || 
+                   costs === '0' || 
+                   costs === '$0' ||
+                   costs === 'Free' ||
+                   costs === 'FREE';
+    
+    if (isFree) {
+      return 'Free';
+    }
+    
+    // If costs contains a dollar sign, extract the number
+    if (costs.includes('$')) {
+      const numericValue = costs.replace(/[^0-9]/g, '');
+      const basePrice = parseInt(numericValue) || 0;
+      return basePrice === 0 ? 'Free' : `$${basePrice}`;
+    }
+    
+    // If costs is just a number (without currency symbol)
+    const numericValue = costs.replace(/[^0-9]/g, '');
+    const basePrice = parseInt(numericValue) || 0;
+    return basePrice === 0 ? 'Free' : `$${basePrice}`;
+  };
+  
   const totalPrice = selectedSeats.reduce((sum, seatId) => {
-    const rowLabel = seatId[0];
-    const isVIP = rowLabel === 'F' || rowLabel === 'G';
-    return sum + getSeatPrice(isVIP);
+    return sum + getSeatPrice(false);
   }, 0);
+
+  // Notify parent component when seats or price changes
+  useEffect(() => {
+    if (onSeatsChange) {
+      onSeatsChange(selectedSeats, totalPrice);
+    }
+  }, [selectedSeats, totalPrice, onSeatsChange]);
 
 
 
@@ -93,7 +166,7 @@ export default function SeatMap() {
 
                 const tooltipText = isBooked
                   ? 'Already Booked'
-                  : `₹${getSeatPrice(isVIP)}`;
+                  : getSeatPriceDisplay(isVIP);
 
                 return (
                   <div className="relative group" key={seatId}>
@@ -123,17 +196,10 @@ export default function SeatMap() {
         <div><span className={`inline-block w-4 h-4 rounded mr-1 ${seatStatusColors.booked}`}></span>Booked</div>
       </div>
 
-      {/* Price and Button */}
+      {/* Price Display */}
       <div className="pt-4 text-lg font-semibold">
-        Total: ₹{totalPrice}
+        Total: {totalPrice === 0 ? 'Free' : `$${totalPrice}`}
       </div>
-      <button
-        className="mt-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded transition disabled:opacity-50"
-        disabled={selectedSeats.length === 0}
-        onClick={() => console.log("Proceed with", selectedSeats)}
-      >
-        Confirm Booking
-      </button>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import QRCodeTicket from './QRCodeTicket';
 
 declare global {
   interface Window {
@@ -16,6 +17,7 @@ interface PaymentModalProps {
     location: string;
     price: number;
   };
+  selectedSeats?: string[];
 }
 
 const formatEventData = (eventData: any) => {
@@ -63,13 +65,16 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     time: "10:00 AM", 
     location: "Central Park, NYC",
     price: 89.99
-  }
+  },
+  selectedSeats = []
 }) => {
   const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStep, setPaymentStep] = useState('select');
   const [loadingError, setLoadingError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
+  const [showQRTicket, setShowQRTicket] = useState(false);
+  const [ticketId, setTicketId] = useState('');
 
   const formattedEvent = formatEventData(eventData);
 
@@ -180,8 +185,16 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       setPaymentStep('select');
       setIsProcessing(false);
       setLoadingError('');
+      setShowQRTicket(false);
       onClose();
     }, 300);
+  };
+
+  const handleShowQRTicket = () => {
+    // Generate a unique ticket ID
+    const newTicketId = `TKT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    setTicketId(newTicketId);
+    setShowQRTicket(true);
   };
 
   const handlePayWithPayPal = () => {
@@ -333,7 +346,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               color: '#ff7b54',
               textAlign: 'center'
             }}>
-              ${eventData.price}
+              {eventData.price === 0 ? 'Free' : `$${eventData.price}`}
             </div>
           </div>
 
@@ -357,55 +370,84 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               flexDirection: 'column',
               gap: '1rem'
             }}>
-              <button 
-                style={{
-                  padding: '1.2rem 2rem',
-                  borderRadius: '12px',
-                  border: 'none',
-                  fontSize: '1.1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.8rem',
-                  transform: 'translateY(0)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: paypalLoaded ? '#0070ba' : '#cbd5e0',
-                  color: 'white'
-                }}
-                className="payment-button"
-                onClick={handlePayWithPayPal}
-                disabled={!paypalLoaded && !loadingError}
-              >
-                💳 {paypalLoaded ? 'Pay with PayPal' : 'Loading PayPal...'}
-              </button>
-              
-              <button 
-                style={{
-                  padding: '1.2rem 2rem',
-                  borderRadius: '12px',
-                  border: 'none',
-                  fontSize: '1.1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.8rem',
-                  transform: 'translateY(0)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#ff7b54',
-                  color: 'white'
-                }}
-                className="payment-button"
-                onClick={handleQuickPay}
-                disabled={isProcessing}
-              >
-                ⚡ Quick Pay (Demo)
-              </button>
+              {eventData.price === 0 ? (
+                <button 
+                  style={{
+                    padding: '1.2rem 2rem',
+                    borderRadius: '12px',
+                    border: 'none',
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.8rem',
+                    transform: 'translateY(0)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#10b981',
+                    color: 'white'
+                  }}
+                  className="payment-button"
+                  onClick={handleQuickPay}
+                  disabled={isProcessing}
+                >
+                  🎫 Confirm Free Booking
+                </button>
+              ) : (
+                <>
+                  <button 
+                    style={{
+                      padding: '1.2rem 2rem',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.8rem',
+                      transform: 'translateY(0)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                      backgroundColor: paypalLoaded ? '#0070ba' : '#cbd5e0',
+                      color: 'white'
+                    }}
+                    className="payment-button"
+                    onClick={handlePayWithPayPal}
+                    disabled={!paypalLoaded && !loadingError}
+                  >
+                    💳 {paypalLoaded ? 'Pay with PayPal' : 'Loading PayPal...'}
+                  </button>
+                  
+                  <button 
+                    style={{
+                      padding: '1.2rem 2rem',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.8rem',
+                      transform: 'translateY(0)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                      backgroundColor: '#ff7b54',
+                      color: 'white'
+                    }}
+                    className="payment-button"
+                    onClick={handleQuickPay}
+                    disabled={isProcessing}
+                  >
+                    ⚡ Quick Pay (Demo)
+                  </button>
+                </>
+              )}
               
               <div style={{
                 fontSize: '0.9rem',
@@ -486,24 +528,52 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 Your ticket for <strong>{formattedEvent.name}</strong> has been confirmed.
               </p>
               <p style={{color: '#718096'}}>A confirmation email will be sent to you shortly.</p>
-              <button 
-                style={{
-                  backgroundColor: '#ff7b54',
-                  color: 'white',
-                  padding: '0.8rem 1.8rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  marginTop: '2rem'
-                }}
-                onClick={handleClose}
-              >
-                Close
-              </button>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
+                <button 
+                  style={{
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    padding: '0.8rem 1.8rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: '600'
+                  }}
+                  onClick={handleShowQRTicket}
+                >
+                  🎫 View Ticket
+                </button>
+                <button 
+                  style={{
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    padding: '0.8rem 1.8rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: '600'
+                  }}
+                  onClick={handleClose}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
+      
+      {/* QR Code Ticket */}
+      {showQRTicket && (
+        <QRCodeTicket
+          eventData={eventData}
+          selectedSeats={selectedSeats}
+          ticketId={ticketId}
+          onClose={() => setShowQRTicket(false)}
+        />
+      )}
     </div>
   );
 };

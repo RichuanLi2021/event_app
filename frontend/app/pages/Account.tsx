@@ -6,7 +6,7 @@ import ProfileDashboard from '~/features/users/components/ProfileDashboard';
 function AccountPage() {
   const user = useAppSelector(state => state.auth.currentUser);
 
-  console.log("current user is: ", user?.name);
+
 
   if (!user) {
     return <Typography variant="h6">You are not signed in.</Typography>;

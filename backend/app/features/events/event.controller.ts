@@ -46,6 +46,7 @@ export async function getEventsByCategory(
     const events = await EventService.getByCategory(req.params.categoryName);
     res.status(200).json(events);
   } catch (err) {
+    
     next(createHttpError(500, "Failed to fetch events by category"));
   }
 }
@@ -62,6 +63,28 @@ export async function getEventById(
     res.status(200).json(event);
   } catch (err) {
     next(createHttpError(500, "Failed to fetch event"));
+  }
+}
+
+// GET http://localhost:5174/api/events/search?q=query&location=location
+export async function searchEvents(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const query = req.query.q as string;
+    const location = req.query.location as string;
+    
+    if (!query && !location) {
+      res.status(200).json([]);
+      return;
+    }
+    
+    const events = await EventService.searchEvents(query || "", location);
+    res.status(200).json(events);
+  } catch (err) {
+    next(createHttpError(500, "Failed to search events"));
   }
 }
 

@@ -6,16 +6,16 @@ import { useAppSelector } from '~/redux/hooks';
 
 export default function EventDetails() {
   const events = useAppSelector((state) => state.events.events);
-  const { eventId } = useParams<{ eventId: string }>();
-  console.log('EventDetails: eventId from URL =', eventId);
+  const { eventTitle } = useParams<{ eventTitle: string }>();
 
   const event = events.find((ev) => {
-    const mongoId =
-      typeof ev._id === 'object' && ev._id !== null && 'toString' in ev._id
-        ? (ev._id as unknown as { toString(): string }).toString()
-        : (ev._id as string);
+    // Convert event title to URL-friendly format for comparison
+    const eventTitleSlug = ev.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphen
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 
-    return mongoId === eventId || (ev as any).id === eventId;
+    return eventTitleSlug === eventTitle;
   });
 
   if (events.length === 0) {
@@ -30,7 +30,7 @@ export default function EventDetails() {
     return (
       <div className="max-w-screen-lg mx-auto p-6 text-center">
         <p className="text-gray-600">
-          Event not found{eventId ? ` (id: ${eventId})` : ''}.
+          Event not found{eventTitle ? ` (title: ${eventTitle})` : ''}.
         </p>
       </div>
     );
@@ -60,16 +60,7 @@ export default function EventDetails() {
             description={event.description}
           />
           <EventMap />
-          <BookButton
-            eventInfo={{
-              title: event.title,
-              date:
-                typeof event.date === "string"
-                  ? event.date
-                  : new Date(event.date).toISOString(),
-              location: event.location,
-            }}
-          />
+          <BookButton eventInfo={event} />
         </div>
 
         {/* Right (Chat Box or future components) */}

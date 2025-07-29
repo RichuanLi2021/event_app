@@ -10,6 +10,7 @@ privateEventRouter.use(authenticate);
 
 // public
 publicEventRouter.get("/", eventController.getAllEvents);
+publicEventRouter.get("/search", eventController.searchEvents);
 publicEventRouter.get("/categories/:categoryName", eventController.getEventsByCategory);
 
 // private

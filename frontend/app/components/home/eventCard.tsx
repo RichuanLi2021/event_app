@@ -10,14 +10,13 @@ export const EventCard = ({ id, title, date, time, location, imageUrl, onClick }
     if (onClick) {
       onClick(title);
     } else {
-      // Backward compatibility: use new route if ID available, fallback to original
-      if (id) {
-        const eventIdentifier = id || encodeURIComponent(title);
-        navigate(`/events/${eventIdentifier}`);
-      } else {
-        // Keep original navigation as fallback
-        navigate("/event-details");
-      }
+      // Convert title to URL-friendly format and navigate
+      const eventTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphen
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+
+      navigate(`/event-details/${eventTitle}`);
     }
   };
 
@@ -47,9 +46,15 @@ export const EventCard = ({ id, title, date, time, location, imageUrl, onClick }
       <Card.Body className="d-flex flex-column justify-content-between" style={{ minHeight: '180px', padding: '1.5rem' }}>
         <div>
           <Card.Title className="fw-semibold mb-2" style={{ fontSize: '1.15rem' }}>{title}</Card.Title>
-          <div className="mb-1" style={{ color: '#555', fontWeight: 500 }}>{date}</div>
-          <div className="mb-2" style={{ color: '#555', fontWeight: 500 }}>{time}</div>
-          <div className="mb-3" style={{ color: '#888', fontSize: '0.98rem' }}>{location}</div>
+          <div className="mb-1" style={{ color: '#555', fontWeight: 500, fontSize: '0.9rem' }}>
+            📅 {date}
+          </div>
+          <div className="mb-2" style={{ color: '#555', fontWeight: 500, fontSize: '0.9rem' }}>
+            🕒 {time}
+          </div>
+          <div className="mb-3" style={{ color: '#888', fontSize: '0.98rem' }}>
+            📍 {location}
+          </div>
         </div>
         <Button
           variant="outline-dark"
