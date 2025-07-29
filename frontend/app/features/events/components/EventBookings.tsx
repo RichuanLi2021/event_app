@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -13,11 +13,13 @@ import {
   ListItemAvatar,
   ListItemText,
 } from '@mui/material';
+import { Modal, Button as BootstrapButton } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '~/redux/hooks';
 import { shallowEqual } from 'react-redux';
-import { createEventAction, fetchAllEventsById } from '~/redux/actions/events/Event-actionCreators';
+import { createEventAction, fetchAllEventsById, updateEvent, updateEventStatus, deleteEvent } from '~/redux/actions/events/Event-actionCreators';
 import { EventStatus, type CreateEventBody, type UserEvent } from '~/features/events/types';
 import { CreateEvent } from './operationOnEvents/CreateNewEvent';
+import { EventDetailsModal } from './operationOnEvents/ViewEventDetailsModal';
 import { toast } from 'react-toastify';
 
 export const ROLE_BLOCKS = {
@@ -41,10 +43,20 @@ export const ROLE_BLOCKS = {
 
 function EventBookings() {
   const dispatch = useAppDispatch();
-  const { currentUserId, userRole, currentUserEvents, loading, error } = useAppSelector((state) => ({
+  const [selectedEvent, setSelectedEvent] = useState<UserEvent | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [cancelEventId, setCancelEventId] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [approveEventId, setApproveEventId] = useState<string | null>(null);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [rejectEventId, setRejectEventId] = useState<string | null>(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  
+  const { currentUserId, userRole, currentUserEvents, events, loading, error } = useAppSelector((state) => ({
     currentUserId: state.auth.currentUser?._id,
     userRole: state.auth.currentUser?.role,    // use this to determine what view to render for different roles
     currentUserEvents: state.events.currentUserEvents,
+    events: state.events.events,
     loading: state.events.loading,
     error: state.events.error,  
 }), shallowEqual);
@@ -70,11 +82,120 @@ function EventBookings() {
     }
   }
 
+  const handleViewDetails = (event: UserEvent) => {
+    setSelectedEvent(event);
+    setShowDetailsModal(true);
+  };
+
+  const handleUpdateEvent = async (eventId: string, updateEventDetails: CreateEventBody) => {
+    try {
+      await dispatch(updateEvent({ _id: eventId, updateFields: updateEventDetails }));
+      if (currentUserId) {
+        await dispatch(fetchAllEventsById(currentUserId));
+      }
+      toast.success('Event updated successfully!');
+    } catch (error) {
+      console.error('Failed to update event:', error);
+      toast.error('Failed to update event. Please try again.');
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      await dispatch(deleteEvent(eventId));
+      if (currentUserId) {
+        await dispatch(fetchAllEventsById(currentUserId));
+      }
+      toast.success('Event deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete event:', error);
+      toast.error('Failed to delete event. Please try again.');
+    }
+  };
+
+  const handleCancelEvent = async (eventId: string) => {
+    try {
+      const currentEvent = currentUserEvents.find(event => event._id === eventId);
+      if (!currentEvent) {
+        toast.error('Event not found');
+        return;
+      }
+
+      await dispatch(updateEventStatus({ 
+        _id: eventId,
+        status: 'CANCELLED' as const
+      }));
+      if (currentUserId) {
+        await dispatch(fetchAllEventsById(currentUserId));
+      }
+      toast.success('Event cancelled successfully!');
+      setShowCancelModal(false);
+      setCancelEventId(null);
+    } catch (error) {
+      console.error('Failed to cancel event:', error);
+      toast.error('Failed to cancel event. Please try again.');
+    }
+  };
+
+  const handleCancelClick = (eventId: string) => {
+    setCancelEventId(eventId);
+    setShowCancelModal(true);
+  };
+
+  // Admin functions for approve/reject
+  const handleApproveEvent = async (eventId: string) => {
+    try {
+      await dispatch(updateEventStatus({ 
+        _id: eventId,
+        status: 'APPROVED' as const
+      }));
+      if (currentUserId) {
+        await dispatch(fetchAllEventsById(currentUserId));
+      }
+      toast.success('Event approved successfully!');
+      setShowApproveModal(false);
+      setApproveEventId(null);
+    } catch (error) {
+      console.error('Failed to approve event:', error);
+      toast.error('Failed to approve event. Please try again.');
+    }
+  };
+
+  const handleRejectEvent = async (eventId: string) => {
+    try {
+      await dispatch(updateEventStatus({ 
+        _id: eventId,
+        status: 'REJECTED' as const
+      }));
+      if (currentUserId) {
+        await dispatch(fetchAllEventsById(currentUserId));
+      }
+      toast.success('Event rejected successfully!');
+      setShowRejectModal(false);
+      setRejectEventId(null);
+    } catch (error) {
+      console.error('Failed to reject event:', error);
+      toast.error('Failed to reject event. Please try again.');
+    }
+  };
+
+  const handleApproveClick = (eventId: string) => {
+    setApproveEventId(eventId);
+    setShowApproveModal(true);
+  };
+
+  const handleRejectClick = (eventId: string) => {
+    setRejectEventId(eventId);
+    setShowRejectModal(true);
+  };
+
   useEffect(() => {
-    if (!currentUserId 
+    if (
+      !currentUserId 
       || (currentUserEvents && currentUserEvents.length !== 0)
       || fetchedRef.current
-      || loading) {
+      || loading
+    ) {
       console.log("You reached Here!")
       return;
     }
@@ -108,7 +229,7 @@ function EventBookings() {
     );
   }
 
-  if (!currentUserEvents || currentUserEvents.length === 0 ) {
+  if (!currentUserEvents || currentUserEvents.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary" textAlign="center">
         Your events history is empty.
@@ -123,53 +244,124 @@ function EventBookings() {
           <CreateEvent onAdd={handleCreateEvent} />
         </div>
       )}
-      <Box display="flex" flexDirection="column" gap={3}>
+      <Box display="flex" flexDirection="column" gap={4}>
         {blocks.map(({ title, status }) => {
           const events = currentUserEvents.filter((event: UserEvent) => 
             event.status && event.status === status);
           return (
             <Card key={status} variant="outlined" sx={{ borderRadius: 2 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
                   {title}
                 </Typography>
               
                 {events.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
                     No {title.toLowerCase()}.
                   </Typography>
                 ) : (
                   <List disablePadding>
                     {events.map((event, idx) => (
-                      <React.Fragment key={event._id || idx}>
-                        <ListItem
-                          secondaryAction={
-                            <Stack direction="column" spacing={1}>
-                              <Button variant="outlined" size="small">
+                      <ListItem
+                        key={event._id || idx}
+                        sx={{ 
+                          py: 2.5, // Add more vertical padding
+                          '&:not(:last-child)': {
+                            borderBottom: '1px solid #e0e0e0' // Add subtle border between items
+                          }
+                        }}
+                                                  secondaryAction={
+                            <Stack direction="column" spacing={2} sx={{ minWidth: 120 }}>
+                              <Button 
+                                variant="outlined" 
+                                size="small"
+                                onClick={() => handleViewDetails(event)}
+                                sx={{ 
+                                  fontSize: '0.75rem',
+                                  py: 0.5,
+                                  px: 1.5,
+                                  minWidth: 'auto'
+                                }}
+                              >
                                 View Details
                               </Button>
-                                {status !== 'CANCELLED' && (
-                              <Button variant="text" color="error" size="small">
-                                Cancel
-                              </Button>
+                              
+                              {/* Admin buttons for PENDING events */}
+                              {userRole === 'ADMIN' && status === 'PENDING' && (
+                                <>
+                                  <Button 
+                                    variant="outlined" 
+                                    color="success" 
+                                    size="small"
+                                    onClick={() => handleApproveClick(event._id)}
+                                    sx={{ 
+                                      fontSize: '0.75rem',
+                                      py: 0.5,
+                                      px: 1.5,
+                                      minWidth: 'auto'
+                                    }}
+                                  >
+                                    Approve
+                                  </Button>
+                                  <Button 
+                                    variant="outlined" 
+                                    color="error" 
+                                    size="small"
+                                    onClick={() => handleRejectClick(event._id)}
+                                    sx={{ 
+                                      fontSize: '0.75rem',
+                                      py: 0.5,
+                                      px: 1.5,
+                                      minWidth: 'auto'
+                                    }}
+                                  >
+                                    Reject
+                                  </Button>
+                                </>
+                              )}
+                              
+                              {/* Non-admin cancel button */}
+                              {userRole !== 'ADMIN' && status !== 'CANCELLED' && (
+                                <Button 
+                                  variant="outlined" 
+                                  color="error" 
+                                  size="small"
+                                  onClick={() => handleCancelClick(event._id)}
+                                  sx={{ 
+                                    fontSize: '0.75rem',
+                                    py: 0.5,
+                                    px: 1.5,
+                                    minWidth: 'auto'
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
                               )}
                             </Stack>
                           }
-                        >
-                          <ListItemAvatar>
-                            <Avatar
-                              variant="rounded"
-                              src={event.imageUrl ?? "/placeholder.jpg"}
-                              sx={{ width: 56, height: 56 }}
-                            />
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={event.title || 'Untitled Event'}
-                            secondary={`${event.date ? new Date(event.date).toLocaleDateString() : 'No date'} · ${event.location || 'No location'}`}
+                      >
+                        <ListItemAvatar sx={{ mr: 3 }}>
+                          <Avatar
+                            variant="rounded"
+                            src={event.imageUrl ?? "/placeholder.jpg"}
+                            sx={{ width: 56, height: 56 }}
                           />
-                        </ListItem>
-                        {idx < events.length - 1 && <Divider component="li" />}
-                      </React.Fragment>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={event.title || 'Untitled Event'}
+                          secondary={`${event.date ? new Date(event.date).toLocaleDateString() : 'No date'} · ${event.location || 'No location'}`}
+                          sx={{ 
+                            '& .MuiListItemText-primary': {
+                              fontSize: '1rem',
+                              fontWeight: 500
+                            },
+                            '& .MuiListItemText-secondary': {
+                              fontSize: '0.875rem',
+                              color: 'text.secondary'
+                            }
+                          }}
+                        />
+                      </ListItem>
                     ))}
                   </List>
                 )}
@@ -178,6 +370,77 @@ function EventBookings() {
           );
         })}
       </Box>
+
+      <EventDetailsModal
+        show={showDetailsModal}
+        onHide={() => {
+          setShowDetailsModal(false);
+          setSelectedEvent(null);
+        }}
+        event={selectedEvent}
+        onUpdate={handleUpdateEvent}
+        onDelete={handleDeleteEvent}
+      />
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && cancelEventId && (
+        <Modal show={showCancelModal} onHide={() => { setShowCancelModal(false); setCancelEventId(null); }}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Cancel</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Are you sure you want to cancel this event? This action cannot be undone.
+          </Modal.Body>
+          <Modal.Footer>
+            <BootstrapButton variant="secondary" onClick={() => { setShowCancelModal(false); setCancelEventId(null); }}>
+              No, Keep Event
+            </BootstrapButton>
+            <BootstrapButton variant="danger" onClick={() => handleCancelEvent(cancelEventId)}>
+              Yes, Cancel Event
+            </BootstrapButton>
+          </Modal.Footer>
+        </Modal>
+      )}
+
+      {/* Approve Confirmation Modal */}
+      {showApproveModal && approveEventId && (
+        <Modal show={showApproveModal} onHide={() => { setShowApproveModal(false); setApproveEventId(null); }}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Approve</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Are you sure you want to approve this event? This will move it to the "Approved Events" section.
+          </Modal.Body>
+          <Modal.Footer>
+            <BootstrapButton variant="secondary" onClick={() => { setShowApproveModal(false); setApproveEventId(null); }}>
+              No, Keep Pending
+            </BootstrapButton>
+            <BootstrapButton variant="success" onClick={() => handleApproveEvent(approveEventId)}>
+              Yes, Approve Event
+            </BootstrapButton>
+          </Modal.Footer>
+        </Modal>
+      )}
+
+      {/* Reject Confirmation Modal */}
+      {showRejectModal && rejectEventId && (
+        <Modal show={showRejectModal} onHide={() => { setShowRejectModal(false); setRejectEventId(null); }}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Reject</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Are you sure you want to reject this event? This will move it to the "Rejected Events" section.
+          </Modal.Body>
+          <Modal.Footer>
+            <BootstrapButton variant="secondary" onClick={() => { setShowRejectModal(false); setRejectEventId(null); }}>
+              No, Keep Pending
+            </BootstrapButton>
+            <BootstrapButton variant="danger" onClick={() => handleRejectEvent(rejectEventId)}>
+              Yes, Reject Event
+            </BootstrapButton>
+          </Modal.Footer>
+        </Modal>
+      )}
     </>
   );
 }

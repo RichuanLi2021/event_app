@@ -19,10 +19,18 @@ export const EventModal = ({
                 {children}
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>
+                <Button 
+                    variant="secondary" 
+                    onClick={onClose}>
                     close
                 </Button>
-                <Button variant="primary" type="submit" form="event-form" disabled={isSubmitting}>
+                <Button 
+                    variant="success"
+
+                    type="submit" 
+                    form="event-form" 
+                    disabled={isSubmitting}
+                    >
                     {submitLabel}
                 </Button>
             </Modal.Footer>

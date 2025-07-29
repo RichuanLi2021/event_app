@@ -1,5 +1,5 @@
 import { api } from "~/api/central-axios";
-import type { CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UserEvents } from "../types";
+import type { CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UpdateEventStatus, UserEvents } from "../types";
 
 export async function fetchAllEvents(): Promise<Events> {
     try {
@@ -56,15 +56,23 @@ export async function createEvent(CreateEventPayload: CreateEventBody): Promise<
     }
 }
 
-// Orgainzer
-export async function updateEvent(UpdateEventFieldsBody: UpdateAnEvent): Promise<UpdatedEvent> {
+// Orgainzer - update event details or just change event status (Cancel or Auditing)
+export async function updateEvent(updatePayload: UpdateAnEvent | UpdateEventStatus): Promise<UpdatedEvent> {
     try {
-        const { data } = await api.put(`/events/${UpdateEventFieldsBody._id}`, UpdateEventFieldsBody.updateFields);
+        const payload = 'updateFields' in updatePayload
+            ? updatePayload.updateFields
+            : {status: updatePayload.status};
+        const { data } = await api.put<UpdatedEvent>(
+            `/events/${updatePayload._id}`, payload);
         return data;
     } catch (err: any) {
         const status = err.response?.status ?? "network";
+        const title = 'updateFields' in updatePayload 
+            ? ` title: ${updatePayload.updateFields.title}` 
+            : '';
         throw new Error(`Update event failed (${status}). \n
-            id: ${UpdateEventFieldsBody._id}; title: ${UpdateEventFieldsBody.updateFields.title}`);
+            id: ${updatePayload._id}; 
+            title: ${title}`);
     }
 }
 

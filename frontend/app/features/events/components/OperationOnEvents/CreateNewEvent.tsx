@@ -10,8 +10,11 @@ export const CreateEvent = ({ onAdd }: CreateEventProps) => {
   const [showModal, setShowModal] = useState(false);
   return (
     <>
-      <Button variant="primary" onClick={() => setShowModal(true)}>
-        <i className="bi bi-plus-circle me-2" />
+      <Button 
+        variant="primary"
+        style={{ backgroundColor: '#f05537', borderColor: '#f05537'}} 
+        onClick={() => setShowModal(true)}>
+        <i className="bi bi-plus-circle" />
         Create Event
       </Button>
       <Formik

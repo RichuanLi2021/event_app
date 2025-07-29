@@ -17,4 +17,6 @@ export type CreateEventInput = Omit<Event, 'status' | 'organizer_id'>;
 
 export type UpdateEventInput = Partial<CreateEventInput>;
 
+export type UpdateEventStatus = Event['status'];
+
 export type LeanEvent = Event & { _id: Types.ObjectId };

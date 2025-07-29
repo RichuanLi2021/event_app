@@ -50,7 +50,7 @@ export const EventFormSelectInput = ({
 
   return (
     <Form.Group controlId={field.name} className="mb-3">
-      <Form.Label htmlFor={field.name}>{label}</Form.Label>
+      <Form.Label>{label}</Form.Label>
       <Form.Select
         {...field} 
         id={field.name}

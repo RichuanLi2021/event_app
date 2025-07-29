@@ -1,18 +1,27 @@
 import { useNavigate } from 'react-router-dom';
+import type { TheEvent } from '../types';
 
 interface BookButtonProps {
-  eventInfo?: {
-    title: string;
-    date: string;
-    location: string;
-  };
+  eventInfo?: TheEvent;
 }
 
 export default function BookButton({ eventInfo }: BookButtonProps) {
   const navigate = useNavigate();
 
   const handleBookTicket = () => {
-    navigate('/seat-selection', {
+    if (!eventInfo?.title) {
+      return;
+    }
+    
+    // Convert title to URL-friendly format
+    const eventTitle = eventInfo.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    
+    const url = `/seat-selection/${eventTitle}`;
+    
+    navigate(url, {
       state: { eventInfo }
     });
   };

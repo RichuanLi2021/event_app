@@ -120,7 +120,6 @@ export interface UserEvent extends Omit<TheEvent, "id" | "organizer"> {
 
 export type UserEvents = UserEvent[];
 
-
 // All events
 export type Events = TheEvent[];
 
@@ -131,13 +130,30 @@ export type UpdateAnEvent = {
   _id: string,
   updateFields: Omit<TheEvent, '_id' | 'createdAt' | 'updatedAt' | 'organizer'>
 };
+// reserved type exclusively for status change
+export type UpdateEventStatus = {
+  _id: string,
+  status: TheEvent['status']
+};
 export type UpdatedEvent = TheEvent;
 export type UpdateEventFields = UpdateAnEvent['updateFields'];
 
-
-
 // Delete
 export type DeletedEvent = Pick<TheEvent, '_id' | 'title'>;
+export interface DeleteEventModalProps {
+  show: boolean;
+  onHide: () => void;
+  onConfirm: () => void;
+  eventTitle: string;
+}
+
+export interface EventDetailsModalProps {
+  show: boolean;
+  onHide: () => void;
+  event: UserEvent | null;
+  onUpdate: (eventId: string, updatedEvent: CreateEventBody) => void;
+  onDelete: (eventId: string) => void;
+}
 
 export interface EventCardProps {
   title: string;

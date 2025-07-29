@@ -3,7 +3,7 @@ import createHttpError from "http-errors";
 import {EventModel} from "./models/event.model";    
 import type { LeanUser } from "../users/types/user.type";
 import { EventService } from "./event.service";
-import { CreateEventInput, UpdateEventInput } from "./types/event.type";
+import { CreateEventInput, UpdateEventInput, UpdateEventStatus } from "./types/event.type";
 
 // GET http://localhost:5174/api/events
 export async function getAllEvents(
@@ -51,6 +51,7 @@ export async function getEventsByCategory(
     const events = await EventService.getByCategory(req.params.categoryName);
     res.status(200).json(events);
   } catch (err) {
+    
     next(createHttpError(500, "Failed to fetch events by category"));
   }
 }
@@ -67,6 +68,28 @@ export async function getEventById(
     res.status(200).json(event);
   } catch (err) {
     next(createHttpError(500, "Failed to fetch event"));
+  }
+}
+
+// GET http://localhost:5174/api/events/search?q=query&location=location
+export async function searchEvents(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const query = req.query.q as string;
+    const location = req.query.location as string;
+    
+    if (!query && !location) {
+      res.status(200).json([]);
+      return;
+    }
+    
+    const events = await EventService.searchEvents(query || "", location);
+    res.status(200).json(events);
+  } catch (err) {
+    next(createHttpError(500, "Failed to search events"));
   }
 }
 
@@ -102,17 +125,16 @@ export async function createEventByCategory(
 
 // PUT http://localhost:5174/api/events/:id
 export async function updateEvent(
-  req: Request<{ id: string, updateFields: UpdateEventInput}>,
+  req: Request<{ id: string }, any, UpdateEventInput | UpdateEventStatus>,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const updated = await EventModel.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!updated) return next(createHttpError(404, "Event not found"));
-    res.status(200).json(updated);
+    const updatedEvent = await EventService.updateEvent(req.params.id, req.body);
+    if (!updatedEvent) {
+      return next(createHttpError(404, "Event not found"));
+    }
+    res.status(200).json(updatedEvent);
   } catch (err) {
     next(createHttpError(400, "Failed to update event"));
   }

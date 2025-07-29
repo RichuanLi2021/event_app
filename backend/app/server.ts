@@ -16,7 +16,6 @@ dotenv.config();
 const app = express();
 const allowedOrigins = parsedEnv.ALLOWED_ORIGINS;
 
-// Check the origin
 app.use((req, _res, next) => {
   console.log("Incoming Origin:", req.get("Origin"));
   next();
@@ -27,19 +26,28 @@ app.use(
     origin: allowedOrigins,
     credentials: true
 }));
-app.use(express.json());
 
-app.use(compression({ level: 6 }));
 if (parsedEnv.NODE_ENV !== "test") {
   app.use(morgan("dev"));
 }
 
+app.use(express.json());
 app.use(cookieParser());
 
-// Security headers and basic DoS protection
 app.use(helmet());
-app.use(
-  rateLimit({
+app.use((req, res, next) => {
+  res.set('Cross-Origin-Embedder-Policy', 'require-corp');
+  next();
+});
+app.use((_req, res, next) => {
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), fullscreen=()"
+  );
+  next();
+});
+
+app.use(rateLimit({
     windowMs: 60_000,
     max: 100,
     standardHeaders: true,
@@ -47,15 +55,15 @@ app.use(
   })
 );
 
+app.use(compression({ level: 6 }));
+
 // Root health‑check
 app.get("/", (_req, res) => {
   res.json(`Hi, this eventflow server API is running on port ${parsedEnv.PORT}`);
 });
-
 app.use("/api", apiRouter);
 
 // app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 (async () => {
   try {
     await connectDB();
