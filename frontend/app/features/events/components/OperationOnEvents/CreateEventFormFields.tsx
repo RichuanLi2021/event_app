@@ -9,13 +9,13 @@ export const EventFormFields = () => (
   <>
     <EventFormTextInput
       label="Event Title"
-      name="eventTitle"
+      name="title"
       textarea={true}
       placeholder="Enter event Title/Nmae"
     />
     <EventFormTextInput
       label="Event URL"
-      name="eventUrl"
+      name="imageUrl"
       textarea={true}
       placeholder="Enter image URL"
     />
@@ -29,6 +29,7 @@ export const EventFormFields = () => (
     />
     <EventFormSelectInput
       label="Category"
+      name="category"
       options={categoryOptions}
       placeholder="Choose a category"
     />
@@ -50,10 +51,10 @@ export const EventFormFields = () => (
       placeholder="Enter allowed capacity for your event"
     />
     <EventFormTextInput
-      label="Price"
-      name="price"
+      label="Costs"
+      name="costs"
       type="text"
-      placeholder="Enter the price"
+      placeholder="Enter the costs"
     />
   </>
 );

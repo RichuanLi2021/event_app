@@ -32,7 +32,7 @@ export const EventFormTextInput = ({
         />
       )}
       <Form.Control.Feedback type="invalid">
-        {meta.error}
+        {typeof meta.error === 'string' ? meta.error : 'Invalid input'}
       </Form.Control.Feedback>
     </Form.Group>
   );
@@ -77,7 +77,7 @@ export const EventFormSelectInput = ({
             ))}
       </Form.Select>
       <Form.Control.Feedback type="invalid">
-        {meta.error}
+        {typeof meta.error === 'string' ? meta.error : 'Invalid input'}
       </Form.Control.Feedback>
     </Form.Group>
   );

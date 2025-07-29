@@ -94,7 +94,7 @@ export const fetchEvent = (id: string): ThunkAction<
 }
 
 // Org
-export const createEvent = (NewEvent: CreateEventBody): ThunkAction<
+export const createEventAction = (NewEvent: CreateEventBody): ThunkAction<
     Promise<TheEvent>, AppState, unknown, EventActions
 > => {
     return async (dispatch) => {

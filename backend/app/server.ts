@@ -29,7 +29,6 @@ app.use(
 }));
 app.use(express.json());
 
-// Compress all HTTP responses without putting high CPU pressure on this web server.
 app.use(compression({ level: 6 }));
 if (parsedEnv.NODE_ENV !== "test") {
   app.use(morgan("dev"));
@@ -41,8 +40,8 @@ app.use(cookieParser());
 app.use(helmet());
 app.use(
   rateLimit({
-    windowMs: 60_000, // 1‑minute window
-    max: 100,         // limit each IP to 100 requests / minute
+    windowMs: 60_000,
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
   })

@@ -23,11 +23,11 @@ export const CreateAnEventFormValidationSchema = Yup.object({
         .typeError('Capacity must be a number')
         .integer('Capacity must be an integer')
         .positive('Capacity must be greater than 0')
-        .nullable()
-        .notRequired(),
-    category: Yup.mixed<EventCategory>()
-        .oneOf(Object.values(EventCategory) as EventCategory[], 'Invalid category'),
+        .required('Capacity is required'),
+    category: Yup.string()
+        .oneOf(Object.values(EventCategory), 'Invalid category')
+        .required('Category is required'),
     costs: Yup.string()
-        .typeError('Costs must be a number')
+        .matches(/^\d+(\.\d{1,2})?$/, 'Costs must be a valid number')
         .required('Costs are required'),
 });

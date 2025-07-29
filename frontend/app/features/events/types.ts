@@ -100,7 +100,7 @@ export interface TheEvent {
   location: string;
   capacity?: number;
   costs: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
   organizer: string;
   createdAt: Date;
   updatedAt: Date
@@ -132,7 +132,9 @@ export type UpdateAnEvent = {
   updateFields: Omit<TheEvent, '_id' | 'createdAt' | 'updatedAt' | 'organizer'>
 };
 export type UpdatedEvent = TheEvent;
-export type UpdateEventFields = Pick<UpdateAnEvent, 'updateFields'>;
+export type UpdateEventFields = UpdateAnEvent['updateFields'];
+
+
 
 // Delete
 export type DeletedEvent = Pick<TheEvent, '_id' | 'title'>;
@@ -157,6 +159,7 @@ export interface EventFieldInputProps extends FieldHookConfig<string> {
 
 export interface EventSelectInputProps extends FieldHookConfig<string> {
   label: string;
+  name: string;
   options: [string, string][];
   placeholder?: string;
 }
@@ -164,12 +167,12 @@ export interface EventSelectInputProps extends FieldHookConfig<string> {
 export interface EventModalProps {
   show: boolean;
   onClose: () => void;
-  onSubmit: (values: UpdateEventFields) => void;
+  onSubmit: () => void;
   title?: string;
   children: React.ReactNode;
   submitLabel: string;
   isSubmitting?: boolean;
-  initialValues: UpdateEventFields;
+  initialValues?: any;
 }
 
 export interface CreateEventProps {

@@ -4,6 +4,7 @@ import type { EventModalProps } from "../../types";
 export const EventModal = ({
     show,
     onClose,
+    onSubmit,
     title,
     children,
     submitLabel = "Save",
@@ -21,7 +22,7 @@ export const EventModal = ({
                 <Button variant="secondary" onClick={onClose}>
                     close
                 </Button>
-                <Button variant="primary" type="submit" form="create-event-form" disabled={isSubmitting}>
+                <Button variant="primary" type="submit" form="event-form" disabled={isSubmitting}>
                     {submitLabel}
                 </Button>
             </Modal.Footer>

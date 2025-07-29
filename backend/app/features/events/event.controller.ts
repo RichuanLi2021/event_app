@@ -90,7 +90,7 @@ export async function createEventByCategory(
       category: req.params.category,
       title: req.params.eventName,
       organizer_id: organizer
-    } as CreateEventInput;
+    };
 
     const newEvent = await EventService.createEvent(input);
     res.status(201).json(newEvent);

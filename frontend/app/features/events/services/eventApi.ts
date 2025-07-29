@@ -46,10 +46,12 @@ export async function fetchEventByCategory(categoryName: string): Promise<Events
 // Organizer
 export async function createEvent(CreateEventPayload: CreateEventBody): Promise<TheEvent> {
     try{
-        const { data } = await api.post(`/categories/${CreateEventPayload.category}/${CreateEventPayload.title}`, CreateEventPayload);
+        console.log('Creating event with payload:', CreateEventPayload);
+        const { data } = await api.post(`events/categories/${CreateEventPayload.category}/${CreateEventPayload.title}`, CreateEventPayload);
         return data;
     } catch (err: any) {
         const status = err.response?.status ?? "network";
+        console.error('Create event error:', err.response?.data || err.message);
         throw new Error(`Create event: ${CreateEventPayload.title} under "${CreateEventPayload.category}" failed (${status})`);
     }
 }
