@@ -6,7 +6,7 @@ export class EventService {
   // public
   static async getAll() {
     const events = await EventModel.find().sort({ createdAt: -1 }).exec();
-  
+    console.log(`Loaded Events: ${events}`)
     return events;
   }
 

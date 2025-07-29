@@ -27,8 +27,11 @@ export async function getAllEventsByUserId(
 ) {
   try {
     const userEvents = await EventService.getAllByUsrId(_req.params.userId);
+    console.log(`User: ${_req.params.userId} has the following events: \n
+      ${userEvents}`);
     res.status(200).json(userEvents);
   } catch (err) {
+    console.log("Fetching events for", _req.params.userId);
     next(createHttpError(500, "Failed to fetch events"))
   }
 }
@@ -43,6 +46,7 @@ export async function getEventsByCategory(
     const events = await EventService.getByCategory(req.params.categoryName);
     res.status(200).json(events);
   } catch (err) {
+    
     next(createHttpError(500, "Failed to fetch events by category"));
   }
 }
