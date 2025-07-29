@@ -32,9 +32,11 @@ const Card = styled(MuiCard)(({ theme }) => ({
 
 const SignContainer = styled(Stack)(({ theme }) => ({
   position: 'relative',
-  minheight: '100dvh',
+  minHeight: '100dvh',
   padding: theme.spacing(2),
   overflowY: 'auto',
+  display: 'flex',
+  alignItems: 'center',
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(4),
   },
