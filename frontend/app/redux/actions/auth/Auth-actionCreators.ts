@@ -64,7 +64,10 @@ export const logoutUser = ():
 
       await persistor.flush();
       await persistor.purge();
-      localStorage.removeItem("persist:auth"); // force remove if purge failed to clear
+      // Only access localStorage on client side
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem("persist:auth"); // force remove if purge failed to clear
+      }
     } catch (err) {
       console.error("Logout failed:", err);
     }

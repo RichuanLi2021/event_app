@@ -27,5 +27,8 @@ export type AppState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 export const persistor = persistStore(store as any, null, ()=>{
-  store.dispatch(validateToken());
+  // Only validate token on client side to avoid hydration issues
+  if (typeof window !== 'undefined') {
+    store.dispatch(validateToken());
+  }
 });

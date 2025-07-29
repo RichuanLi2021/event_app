@@ -2,11 +2,21 @@ import EventInfo from "../features/events/components/EventInfo";
 import EventMap from "../features/events/components/EventMap";
 import BookButton from "../features/events/components/BookButton";
 import { useParams } from "react-router-dom";
-import { useAppSelector } from '~/redux/hooks';
+import { useAppSelector, useAppDispatch } from '~/redux/hooks';
+import { fetchAllEvents } from '~/redux/actions/events/Event-actionCreators';
+import { useEffect } from 'react';
 
 export default function EventDetails() {
-  const events = useAppSelector((state) => state.events.events);
+  const dispatch = useAppDispatch();
+  const { events, loading, error } = useAppSelector((state) => state.events);
   const { eventTitle } = useParams<{ eventTitle: string }>();
+
+  // Fetch events if they're not loaded
+  useEffect(() => {
+    if (events.length === 0 && !loading) {
+      dispatch(fetchAllEvents());
+    }
+  }, [dispatch, events.length, loading]);
 
   const event = events.find((ev) => {
     // Convert event title to URL-friendly format for comparison
@@ -18,10 +28,27 @@ export default function EventDetails() {
     return eventTitleSlug === eventTitle;
   });
 
+  if (loading) {
+    return (
+      <div className="max-w-screen-lg mx-auto p-6 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading event details…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-screen-lg mx-auto p-6 text-center">
+        <p className="text-red-600">Error loading events: {error}</p>
+      </div>
+    );
+  }
+
   if (events.length === 0) {
     return (
       <div className="max-w-screen-lg mx-auto p-6 text-center">
-        <p className="text-gray-600">Loading event details…</p>
+        <p className="text-gray-600">No events available.</p>
       </div>
     );
   }
