@@ -173,6 +173,32 @@ export const updateEventStatus = (eventStatus: UpdateEventStatus): ThunkAction<
     }
 }
 
+export const adminUpdateEventStatus = (eventId: string, status: 'APPROVED' | 'REJECTED'): ThunkAction<
+    Promise<UpdatedEvent>, AppState, unknown, EventActions
+> => {
+    return async (dispatch) => {
+        dispatch({
+            type: EventActionTypes.UPDATE_EVENT_STATUS_REQUEST,
+            payload: { _id: eventId, status }
+        });
+        try {
+            const updatedEvent = await eventApi.adminUpdateEventStatus(eventId, status);
+            dispatch({
+                type: EventActionTypes.UPDATE_EVENT_SUCCESS,
+                payload: updatedEvent
+            });
+            console.log(`Event audit succeed! ${updatedEvent}`);
+            return updatedEvent;
+        } catch (err: any) {
+            dispatch({
+                type: EventActionTypes.UPDATE_EVENT_FAILURE,
+                payload: {error: err.message || "Event audit failed."}
+            })
+            throw err;
+        }
+    }
+}
+
 export const deleteEvent = (id: string): ThunkAction<
     Promise<DeletedEvent>, AppState, unknown, EventActions
 > => {

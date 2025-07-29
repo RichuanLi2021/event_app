@@ -76,6 +76,19 @@ export async function updateEvent(updatePayload: UpdateAnEvent | UpdateEventStat
     }
 }
 
+// Admin update
+export async function adminUpdateEventStatus(eventId: string, status: 'APPROVED' | 'REJECTED'): Promise<UpdatedEvent> {
+    try {
+        const { data } = await api.patch<UpdatedEvent>(`/admin/events/${eventId}/audit`, { status });
+        return data;
+    } catch (err: any) {
+        const status = err.response?.status ?? "network";
+        throw new Error(`Admin audit failed (${status}). \n
+            id: ${eventId}; 
+            status: ${status}`);
+    }
+}
+
 export async function deleteEvent(id: string): Promise<DeletedEvent> {
     try {
         const { data } = await api.delete(`/events/${id}`);
@@ -86,5 +99,3 @@ export async function deleteEvent(id: string): Promise<DeletedEvent> {
             id: ${id}`);
     }
 }
-
-// Admin

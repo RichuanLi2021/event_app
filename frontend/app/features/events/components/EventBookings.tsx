@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   Stack,
-  Divider,
   List,
   ListItem,
   ListItemAvatar,
@@ -16,7 +15,7 @@ import {
 import { Modal, Button as BootstrapButton } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '~/redux/hooks';
 import { shallowEqual } from 'react-redux';
-import { createEventAction, fetchAllEventsById, updateEvent, updateEventStatus, deleteEvent } from '~/redux/actions/events/Event-actionCreators';
+import { createEventAction, fetchAllEventsById, fetchAllEvents, updateEvent, updateEventStatus, deleteEvent, adminUpdateEventStatus } from '~/redux/actions/events/Event-actionCreators';
 import { EventStatus, type CreateEventBody, type UserEvent } from '~/features/events/types';
 import { CreateEvent } from './operationOnEvents/CreateNewEvent';
 import { EventDetailsModal } from './operationOnEvents/ViewEventDetailsModal';
@@ -142,14 +141,12 @@ function EventBookings() {
     setShowCancelModal(true);
   };
 
-  // Admin functions for approve/reject
   const handleApproveEvent = async (eventId: string) => {
     try {
-      await dispatch(updateEventStatus({ 
-        _id: eventId,
-        status: 'APPROVED' as const
-      }));
-      if (currentUserId) {
+      await dispatch(adminUpdateEventStatus(eventId, 'APPROVED'));
+      if (userRole === 'ADMIN') {
+        await dispatch(fetchAllEvents());
+      } else if (currentUserId) {
         await dispatch(fetchAllEventsById(currentUserId));
       }
       toast.success('Event approved successfully!');
@@ -163,11 +160,10 @@ function EventBookings() {
 
   const handleRejectEvent = async (eventId: string) => {
     try {
-      await dispatch(updateEventStatus({ 
-        _id: eventId,
-        status: 'REJECTED' as const
-      }));
-      if (currentUserId) {
+      await dispatch(adminUpdateEventStatus(eventId, 'REJECTED'));
+      if (userRole === 'ADMIN') {
+        await dispatch(fetchAllEvents());
+      } else if (currentUserId) {
         await dispatch(fetchAllEventsById(currentUserId));
       }
       toast.success('Event rejected successfully!');
@@ -190,28 +186,39 @@ function EventBookings() {
   };
 
   useEffect(() => {
-    if (
-      !currentUserId 
-      || (currentUserEvents && currentUserEvents.length !== 0)
-      || fetchedRef.current
-      || loading
-    ) {
-      console.log("You reached Here!")
+    if (fetchedRef.current || loading) {
       return;
     }
-      // CheckPoint: DO NOT DELETE
-      console.log("Dispatching fetchOrganizerEvents for", currentUserId);
-
+    if (userRole === 'ADMIN') {
+      console.log("Dispatching fetchAllEvents for ADMIN");
       (async () => {
         try {
-          await dispatch(fetchAllEventsById(currentUserId!));
+          await dispatch(fetchAllEvents());
         } catch (err) {
-          console.log(`Failed to fetch user events ${err}`);
+          console.log(`Failed to fetch all events for admin: ${err}`);
         } finally {
           fetchedRef.current = true;
         }
       })();
-    }, [currentUserId, loading, dispatch]);
+    }
+    else {
+      if (!currentUserId) {
+        console.log("No user ID available");
+        return;
+      }
+      
+      console.log("Dispatching fetchAllEventsById for user:", currentUserId);
+      (async () => {
+        try {
+          await dispatch(fetchAllEventsById(currentUserId!));
+        } catch (err) {
+          console.log(`Failed to fetch user events: ${err}`);
+        } finally {
+          fetchedRef.current = true;
+        }
+      })();
+    }
+  }, [currentUserId, userRole, currentUserEvents, loading, dispatch]);
 
   if (loading) {
     return (
@@ -229,10 +236,13 @@ function EventBookings() {
     );
   }
 
-  if (!currentUserEvents || currentUserEvents.length === 0) {
+  // Determine which events to use based on user role
+  const eventsToDisplay = userRole === 'ADMIN' ? events : currentUserEvents;
+  
+  if (!eventsToDisplay || eventsToDisplay.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary" textAlign="center">
-        Your events history is empty.
+        {userRole === 'ADMIN' ? 'No events found.' : 'Your events history is empty.'}
       </Typography>
     );
   }
@@ -246,8 +256,8 @@ function EventBookings() {
       )}
       <Box display="flex" flexDirection="column" gap={4}>
         {blocks.map(({ title, status }) => {
-          const events = currentUserEvents.filter((event: UserEvent) => 
-            event.status && event.status === status);
+          const filteredEvents = eventsToDisplay.filter((event: any) => 
+            event.status === status);
           return (
             <Card key={status} variant="outlined" sx={{ borderRadius: 2 }}>
               <CardContent sx={{ p: 3 }}>
@@ -255,38 +265,23 @@ function EventBookings() {
                   {title}
                 </Typography>
               
-                {events.length === 0 ? (
+                {filteredEvents.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
                     No {title.toLowerCase()}.
                   </Typography>
                 ) : (
                   <List disablePadding>
-                    {events.map((event, idx) => (
+                    {filteredEvents.map((event, idx) => (
                       <ListItem
                         key={event._id || idx}
                         sx={{ 
-                          py: 2.5, // Add more vertical padding
+                          py: 2.5,
                           '&:not(:last-child)': {
-                            borderBottom: '1px solid #e0e0e0' // Add subtle border between items
+                            borderBottom: '1px solid #e0e0e0'
                           }
                         }}
-                                                  secondaryAction={
+                          secondaryAction={
                             <Stack direction="column" spacing={2} sx={{ minWidth: 120 }}>
-                              <Button 
-                                variant="outlined" 
-                                size="small"
-                                onClick={() => handleViewDetails(event)}
-                                sx={{ 
-                                  fontSize: '0.75rem',
-                                  py: 0.5,
-                                  px: 1.5,
-                                  minWidth: 'auto'
-                                }}
-                              >
-                                View Details
-                              </Button>
-                              
-                              {/* Admin buttons for PENDING events */}
                               {userRole === 'ADMIN' && status === 'PENDING' && (
                                 <>
                                   <Button 
@@ -320,22 +315,40 @@ function EventBookings() {
                                 </>
                               )}
                               
-                              {/* Non-admin cancel button */}
-                              {userRole !== 'ADMIN' && status !== 'CANCELLED' && (
-                                <Button 
-                                  variant="outlined" 
-                                  color="error" 
-                                  size="small"
-                                  onClick={() => handleCancelClick(event._id)}
-                                  sx={{ 
-                                    fontSize: '0.75rem',
-                                    py: 0.5,
-                                    px: 1.5,
-                                    minWidth: 'auto'
-                                  }}
-                                >
-                                  Cancel
-                                </Button>
+                              {/* Non-admin buttons */}
+                              {userRole !== 'ADMIN' && (
+                                <>
+                                  <Button 
+                                    variant="outlined" 
+                                    size="small"
+                                    onClick={() => handleViewDetails(event as unknown as UserEvent)}
+                                    sx={{ 
+                                      fontSize: '0.75rem',
+                                      py: 0.5,
+                                      px: 1.5,
+                                      minWidth: 'auto'
+                                    }}
+                                  >
+                                    View Details
+                                  </Button>
+                                  
+                                  {status !== 'CANCELLED' && (
+                                    <Button 
+                                      variant="outlined" 
+                                      color="error" 
+                                      size="small"
+                                      onClick={() => handleCancelClick(event._id)}
+                                      sx={{ 
+                                        fontSize: '0.75rem',
+                                        py: 0.5,
+                                        px: 1.5,
+                                        minWidth: 'auto'
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  )}
+                                </>
                               )}
                             </Stack>
                           }
@@ -347,20 +360,40 @@ function EventBookings() {
                             sx={{ width: 56, height: 56 }}
                           />
                         </ListItemAvatar>
-                        <ListItemText
-                          primary={event.title || 'Untitled Event'}
-                          secondary={`${event.date ? new Date(event.date).toLocaleDateString() : 'No date'} · ${event.location || 'No location'}`}
-                          sx={{ 
-                            '& .MuiListItemText-primary': {
-                              fontSize: '1rem',
-                              fontWeight: 500
-                            },
-                            '& .MuiListItemText-secondary': {
-                              fontSize: '0.875rem',
-                              color: 'text.secondary'
+                                                  <ListItemText
+                            primary={
+                              userRole === 'ADMIN' ? (
+                                <Typography
+                                  component="span"
+                                  sx={{
+                                    fontSize: '1rem',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    color: 'primary.main',
+                                    '&:hover': {
+                                      textDecoration: 'underline'
+                                    }
+                                  }}
+                                  onClick={() => handleViewDetails(event as unknown as UserEvent)}
+                                >
+                                  {event.title || 'Untitled Event'}
+                                </Typography>
+                              ) : (
+                                event.title || 'Untitled Event'
+                              )
                             }
-                          }}
-                        />
+                            secondary={`${event.date ? new Date(event.date).toLocaleDateString() : 'No date'} · ${event.location || 'No location'}`}
+                            sx={{ 
+                              '& .MuiListItemText-primary': {
+                                fontSize: '1rem',
+                                fontWeight: 500
+                              },
+                              '& .MuiListItemText-secondary': {
+                                fontSize: '0.875rem',
+                                color: 'text.secondary'
+                              }
+                            }}
+                          />
                       </ListItem>
                     ))}
                   </List>
@@ -380,6 +413,7 @@ function EventBookings() {
         event={selectedEvent}
         onUpdate={handleUpdateEvent}
         onDelete={handleDeleteEvent}
+        isAdmin={userRole === 'ADMIN'}
       />
 
       {/* Cancel Confirmation Modal */}

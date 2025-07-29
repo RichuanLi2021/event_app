@@ -12,7 +12,8 @@ export const EventDetailsModal = ({
   event,
   onUpdate,
   onDelete,
-}: EventDetailsModalProps) => {
+  isAdmin = false,
+}: EventDetailsModalProps & { isAdmin?: boolean }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -163,17 +164,21 @@ export const EventDetailsModal = ({
               <Button variant="secondary" type="button" onClick={handleClose}>
                 Close
               </Button>
-              <Button 
-                variant="primary" 
-                type="button" 
-                onClick={handleEdit}
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                Edit
-              </Button>
-              <Button variant="danger" type="button" onClick={handleDelete}>
-                Delete
-              </Button>
+              {!isAdmin && (
+                <>
+                  <Button 
+                    variant="primary" 
+                    type="button" 
+                    onClick={handleEdit}
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    Edit
+                  </Button>
+                  <Button variant="danger" type="button" onClick={handleDelete}>
+                    Delete
+                  </Button>
+                </>
+              )}
             </>
           )}
         </Modal.Footer>

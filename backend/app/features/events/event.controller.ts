@@ -3,7 +3,7 @@ import createHttpError from "http-errors";
 import {EventModel} from "./models/event.model";    
 import type { LeanUser } from "../users/types/user.type";
 import { EventService } from "./event.service";
-import { CreateEventInput, UpdateEventInput, UpdateEventStatus } from "./types/event.type";
+import { AdminUpdateEventStatus, CreateEventInput, UpdateEventInput, UpdateEventStatus } from "./types/event.type";
 
 // GET http://localhost:5174/api/events
 export async function getAllEvents(
@@ -174,22 +174,16 @@ export async function deleteManyEvents(
 
 // PATCH http://localhost:5174/api/admin/events/:id/audit   { status: "APPROVED" | "REJECTED" }
 export async function auditEvent(
-  req: Request<{ id: string }, unknown, { status: "APPROVED" | "REJECTED" }>,
+  req: Request<{ id: string }, unknown, AdminUpdateEventStatus>,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const { status } = req.body;
-    if (!["APPROVED", "REJECTED"].includes(status))
+    const adminUpdateEventStatus = await EventService.updateEvent(req.params.id, req.body);
+    if (!adminUpdateEventStatus) {
       return next(createHttpError(400, "Invalid status"));
-
-    const event = await EventModel.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
-    if (!event) return next(createHttpError(404, "Event not found"));
-    res.status(200).json(event);
+    }
+    res.status(200).json(adminUpdateEventStatus);
   } catch (err) {
     next(createHttpError(500, "Failed to audit event"));
   }

@@ -1,6 +1,6 @@
 import {EventModel} from "./models/event.model";
 import { Types, UpdateQuery } from "mongoose";
-import { CreateEventInput, UpdateEventInput, LeanEvent, UpdateEventStatus } from "./types/event.type";
+import { CreateEventInput, UpdateEventInput, LeanEvent, UpdateEventStatus, AdminUpdateEventStatus } from "./types/event.type";
 
 export class EventService {
   // public
@@ -75,7 +75,7 @@ export class EventService {
 
   static async updateEvent(
     id: string,
-    patch: UpdateEventInput | UpdateEventStatus
+    patch: UpdateEventInput | UpdateEventStatus | AdminUpdateEventStatus
   ): Promise<LeanEvent | null> {
     // full event updates or status-only updates
     const updateCheck = typeof patch === 'string' ? {status: patch} : patch;

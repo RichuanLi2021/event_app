@@ -58,7 +58,7 @@ export const enum EventStatus {
   Rejected = 'REJECTED',
   Cancelled = 'CANCELLED',
 
-  Confirmed = 'CONFIRMED',
+  Confirmed = 'APPROVED',
   Booked = 'BOOKED',
   Waitlisted = 'WAITLISTED',
 }
