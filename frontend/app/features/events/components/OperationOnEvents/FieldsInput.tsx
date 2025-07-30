@@ -1,6 +1,6 @@
 import { Form } from "react-bootstrap";
 import { useField } from "formik";
-import type { EventFieldInputProps, EventSelectInputProps } from "../../types";
+import type { EventFieldInputProps, EventSelectInputProps } from "~/features/events/types";
 
 export const EventFormTextInput = ({
   label,

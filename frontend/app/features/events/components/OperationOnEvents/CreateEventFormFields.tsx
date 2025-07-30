@@ -1,5 +1,5 @@
 import { EventFormTextInput, EventFormSelectInput } from "./FieldsInput";
-import { EventCategory } from '../../types';
+import { EventCategory } from '~/features/events/types';
 
 const categoryOptions = Object
   .values(EventCategory)

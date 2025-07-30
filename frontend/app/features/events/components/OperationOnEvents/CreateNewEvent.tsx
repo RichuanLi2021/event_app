@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Button} from "react-bootstrap";
 import { EventModal } from "./EventModal";
 import { Formik, Form as FormikForm} from 'formik';
-import type { CreateEventProps } from "../../types";
-import { CreateAnEventFormValidationSchema } from "../../formValidation";
+import type { CreateEventProps } from "~/features/events/types";
+import { CreateAnEventFormValidationSchema } from "~/features/events/formValidation";
 import { EventFormFields } from "./CreateEventFormFields";
 
 export const CreateEvent = ({ onAdd }: CreateEventProps) => {

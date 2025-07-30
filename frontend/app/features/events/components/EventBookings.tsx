@@ -17,8 +17,8 @@ import { useAppDispatch, useAppSelector } from '~/redux/hooks';
 import { shallowEqual } from 'react-redux';
 import { createEventAction, fetchAllEventsById, fetchAllEvents, updateEvent, updateEventStatus, deleteEvent, adminUpdateEventStatus } from '~/redux/actions/events/Event-actionCreators';
 import { EventStatus, type CreateEventBody, type UserEvent } from '~/features/events/types';
-import { CreateEvent } from './operationOnEvents/CreateNewEvent';
-import { EventDetailsModal } from './operationOnEvents/ViewEventDetailsModal';
+import { CreateEvent } from '~/features/events/components/operationOnEvents/CreateNewEvent';
+import { EventDetailsModal } from '~/features/events/components/operationOnEvents/ViewEventDetailsModal';
 import { toast } from 'react-toastify';
 
 export const ROLE_BLOCKS = {

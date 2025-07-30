@@ -1,5 +1,5 @@
 import { Button, Modal } from "react-bootstrap";
-import type { EventModalProps } from "../../types";
+import type { EventModalProps } from "~/features/events/types";
 
 export const EventModal = ({
     show,

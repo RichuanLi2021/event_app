@@ -1,5 +1,5 @@
 import { Button, Modal } from "react-bootstrap";
-import type { DeleteEventModalProps } from "../../types";
+import type { DeleteEventModalProps } from "~/features/events/types";
 
 export const DeleteEventModal = ({
   show,
