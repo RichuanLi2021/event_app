@@ -1,6 +1,6 @@
 import {EventModel} from "./models/event.model";
 import { Types, UpdateQuery } from "mongoose";
-import { CreateEventInput, UpdateEventInput, LeanEvent } from "./types/event.type";
+import { CreateEventInput, UpdateEventInput, LeanEvent, UpdateEventStatus, AdminUpdateEventStatus } from "./types/event.type";
 
 export class EventService {
   // public
@@ -51,11 +51,22 @@ export class EventService {
   }
 
   // organizer
-  static async createEvent(data: CreateEventInput): Promise<LeanEvent> {
+  static async createEvent(data: CreateEventInput & { organizer_id: Types.ObjectId }): Promise<LeanEvent> {
     const { title, category, description, date, location, capacity, costs } = data;
+    
     if (!title || !category || !description || !date || !location || !capacity || !costs) {
+      const missingFields = [];
+      if (!title) missingFields.push('title');
+      if (!category) missingFields.push('category');
+      if (!description) missingFields.push('description');
+      if (!date) missingFields.push('date');
+      if (!location) missingFields.push('location');
+      if (!capacity) missingFields.push('capacity');
+      if (!costs) missingFields.push('costs');
+      
+      console.error(`Missing required fields: ${missingFields.join(', ')}`);
       throw new Error(
-        "Missing required fields: title, category, description, date, location, capacity, and costs are mandatory."
+        `Missing required fields: ${missingFields.join(', ')} are mandatory.`
       );
     }
     const created = await EventModel.create(data);
@@ -64,9 +75,11 @@ export class EventService {
 
   static async updateEvent(
     id: string,
-    patch: UpdateQuery<UpdateEventInput>
+    patch: UpdateEventInput | UpdateEventStatus | AdminUpdateEventStatus
   ): Promise<LeanEvent | null> {
-    return EventModel.findByIdAndUpdate(id, patch, {
+    // full event updates or status-only updates
+    const updateCheck = typeof patch === 'string' ? {status: patch} : patch;
+    return EventModel.findByIdAndUpdate(id, updateCheck, {
         new: true,
         runValidators: true
       })

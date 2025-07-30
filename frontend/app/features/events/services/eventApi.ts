@@ -1,5 +1,5 @@
 import { api } from "~/api/central-axios";
-import type { CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UserEvents } from "../types";
+import type { CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UpdateEventStatus, UserEvents } from "../types";
 
 export async function fetchAllEvents(): Promise<Events> {
     try {
@@ -46,23 +46,46 @@ export async function fetchEventByCategory(categoryName: string): Promise<Events
 // Organizer
 export async function createEvent(CreateEventPayload: CreateEventBody): Promise<TheEvent> {
     try{
-        const { data } = await api.post(`/categories/${CreateEventPayload.category}/${CreateEventPayload.title}`, CreateEventPayload);
+        console.log('Creating event with payload:', CreateEventPayload);
+        const { data } = await api.post(`events/categories/${CreateEventPayload.category}/${CreateEventPayload.title}`, CreateEventPayload);
         return data;
     } catch (err: any) {
         const status = err.response?.status ?? "network";
+        console.error('Create event error:', err.response?.data || err.message);
         throw new Error(`Create event: ${CreateEventPayload.title} under "${CreateEventPayload.category}" failed (${status})`);
     }
 }
 
-// Orgainzer
-export async function updateEvent(UpdateEventFieldsBody: UpdateAnEvent): Promise<UpdatedEvent> {
+// Orgainzer - update event details or just change event status (Cancel or Auditing)
+export async function updateEvent(updatePayload: UpdateAnEvent | UpdateEventStatus): Promise<UpdatedEvent> {
     try {
-        const { data } = await api.put(`/events/${UpdateEventFieldsBody._id}`, UpdateEventFieldsBody.updateFields);
+        const payload = 'updateFields' in updatePayload
+            ? updatePayload.updateFields
+            : {status: updatePayload.status};
+        const { data } = await api.put<UpdatedEvent>(
+            `/events/${updatePayload._id}`, payload);
         return data;
     } catch (err: any) {
         const status = err.response?.status ?? "network";
+        const title = 'updateFields' in updatePayload 
+            ? ` title: ${updatePayload.updateFields.title}` 
+            : '';
         throw new Error(`Update event failed (${status}). \n
-            id: ${UpdateEventFieldsBody._id}; title: ${UpdateEventFieldsBody.updateFields.title}`);
+            id: ${updatePayload._id}; 
+            title: ${title}`);
+    }
+}
+
+// Admin update
+export async function adminUpdateEventStatus(eventId: string, status: 'APPROVED' | 'REJECTED'): Promise<UpdatedEvent> {
+    try {
+        const { data } = await api.patch<UpdatedEvent>(`/admin/events/${eventId}/audit`, { status });
+        return data;
+    } catch (err: any) {
+        const status = err.response?.status ?? "network";
+        throw new Error(`Admin audit failed (${status}). \n
+            id: ${eventId}; 
+            status: ${status}`);
     }
 }
 
@@ -76,5 +99,3 @@ export async function deleteEvent(id: string): Promise<DeletedEvent> {
             id: ${id}`);
     }
 }
-
-// Admin

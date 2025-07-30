@@ -121,6 +121,34 @@ export default function eventReducer(
         error: action.payload.error 
     };
 
+    // Update event status
+    case EventActionTypes.UPDATE_EVENT_STATUS_REQUEST:
+      return {
+        ...state,
+        updating: true,
+        error: null
+      };
+
+    case EventActionTypes.UPDATE_EVENT_STATUS_SUCCESS:
+      return {
+        ...state,
+        updating: false,
+        events: state.events.map((event) =>
+          event._id === action.payload._id ? action.payload : event
+        ),
+        updatedEventStatus: {
+          _id: action.payload._id,
+          status: action.payload.status,
+        },
+      };
+
+    case EventActionTypes.UPDATE_EVENT_STATUS_FAILURE:
+      return {
+        ...state,
+        updating: false, 
+        error: action.payload.error 
+      };
+
     //DELETE
     case EventActionTypes.DELETE_EVENT_REQUEST:
       return { 

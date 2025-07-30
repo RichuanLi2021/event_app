@@ -1,0 +1,39 @@
+import { Button, Modal } from "react-bootstrap";
+import type { EventModalProps } from "~/features/events/types";
+
+export const EventModal = ({
+    show,
+    onClose,
+    onSubmit,
+    title,
+    children,
+    submitLabel = "Save",
+    isSubmitting = false,
+}: EventModalProps) => {
+    return (
+        <Modal show={show} onHide={onClose}>
+            <Modal.Header closeButton>
+                <Modal.Title>{title || "Modal"}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {children}
+            </Modal.Body>
+            <Modal.Footer>
+                <Button 
+                    variant="secondary" 
+                    onClick={onClose}>
+                    close
+                </Button>
+                <Button 
+                    variant="success"
+
+                    type="submit" 
+                    form="event-form" 
+                    disabled={isSubmitting}
+                    >
+                    {submitLabel}
+                </Button>
+            </Modal.Footer>
+        </Modal>
+    );
+};

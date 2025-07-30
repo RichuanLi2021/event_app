@@ -30,12 +30,11 @@ const EventSchema = new Schema<Event>(
     },
     location: {
       type: String,
-      enum: ['Online', 'On-site'], 
       required: true
     },
     capacity: {
       type: Number,
-      required: false
+      required: true
     },
     costs: {
       type: String,

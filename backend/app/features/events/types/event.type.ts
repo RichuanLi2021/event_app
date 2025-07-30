@@ -17,4 +17,7 @@ export type CreateEventInput = Omit<Event, 'status' | 'organizer_id'>;
 
 export type UpdateEventInput = Partial<CreateEventInput>;
 
+export type UpdateEventStatus = Extract<Event['status'], 'PENDING' | 'CANCELLED'>;
+export type AdminUpdateEventStatus = Extract<Event['status'], 'PENDING' | 'APPROVED' | 'REJECTED'>;
+
 export type LeanEvent = Event & { _id: Types.ObjectId };

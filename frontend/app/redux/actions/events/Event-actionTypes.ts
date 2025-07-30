@@ -1,4 +1,4 @@
-import type { CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UserEvent, UserEvents } from "~/features/events/types";
+import type { CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UpdateEventStatus, UserEvent, UserEvents } from "~/features/events/types";
 import type { Action } from 'redux';
 
 // Fetch Events
@@ -27,6 +27,11 @@ export enum EventActionTypes {
   UPDATE_EVENT_REQUEST = 'event/UPDATE_EVENT_REQUEST',
   UPDATE_EVENT_SUCCESS = 'event/UPDATE_EVENT_SUCCESS',
   UPDATE_EVENT_FAILURE = 'event/UPDATE_EVENT_FAILURE',
+
+  // Update event status
+  UPDATE_EVENT_STATUS_REQUEST = 'event/UPDATE_EVENT_STATUS_REQUEST',
+  UPDATE_EVENT_STATUS_SUCCESS = 'event/UPDATE_EVENT_STATUS_SUCCESS',
+  UPDATE_EVENT_STATUS_FAILURE = 'event/UPDATE_EVENT_STATUS_FAILURE',
 
   // Delete one
   DELETE_EVENT_REQUEST = 'event/DELETE_EVENT_REQUEST',
@@ -91,7 +96,7 @@ export interface CreateEventFailureAction extends Action<
   payload: { error: string };
 }
 
-// Update
+// Update event
 export interface UpdateEventRequestAction extends Action<
   typeof EventActionTypes.UPDATE_EVENT_REQUEST>{
   payload: UpdateAnEvent;
@@ -102,6 +107,20 @@ export interface UpdateEventSuccessAction extends Action<
 }
 export interface UpdateEventFailureAction extends Action<
   typeof EventActionTypes.UPDATE_EVENT_FAILURE>{
+  payload: { error: string };
+}
+
+// Update event status
+export interface UpdateEventStatusRequestAction extends Action<
+  typeof EventActionTypes.UPDATE_EVENT_STATUS_REQUEST>{
+  payload: UpdateEventStatus;
+}
+export interface UpdateEventStatusSuccessAction extends Action<
+  typeof EventActionTypes.UPDATE_EVENT_STATUS_SUCCESS>{
+  payload: UpdatedEvent;
+}
+export interface UpdateEventStatusFailureAction extends Action<
+  typeof EventActionTypes.UPDATE_EVENT_STATUS_FAILURE>{
   payload: { error: string };
 }
 
@@ -135,6 +154,9 @@ export type EventActions =
   | UpdateEventRequestAction
   | UpdateEventSuccessAction
   | UpdateEventFailureAction
+  | UpdateEventStatusRequestAction
+  | UpdateEventStatusSuccessAction
+  | UpdateEventStatusFailureAction
   | DeleteEventRequestAction
   | DeleteEventSuccessAction
   | DeleteEventFailureAction

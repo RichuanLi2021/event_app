@@ -3,7 +3,7 @@ import createHttpError from "http-errors";
 import {EventModel} from "./models/event.model";    
 import type { LeanUser } from "../users/types/user.type";
 import { EventService } from "./event.service";
-import { CreateEventInput, UpdateEventInput } from "./types/event.type";
+import { AdminUpdateEventStatus, CreateEventInput, UpdateEventInput, UpdateEventStatus } from "./types/event.type";
 
 // GET http://localhost:5174/api/events
 export async function getAllEvents(
@@ -27,6 +27,11 @@ export async function getAllEventsByUserId(
 ) {
   try {
     const userEvents = await EventService.getAllByUsrId(_req.params.userId);
+    if(!userEvents || userEvents.length === 0) {
+      console.log("No relevant events found with the provided user ID.")
+      res.status(200).send([]);
+      return;
+    }
     console.log(`User: ${_req.params.userId} has the following events: \n
       ${userEvents}`);
     res.status(200).json(userEvents);
@@ -108,7 +113,7 @@ export async function createEventByCategory(
       category: req.params.category,
       title: req.params.eventName,
       organizer_id: organizer
-    } as CreateEventInput;
+    };
 
     const newEvent = await EventService.createEvent(input);
     res.status(201).json(newEvent);
@@ -120,17 +125,16 @@ export async function createEventByCategory(
 
 // PUT http://localhost:5174/api/events/:id
 export async function updateEvent(
-  req: Request<{ id: string, updateFields: UpdateEventInput}>,
+  req: Request<{ id: string }, any, UpdateEventInput | UpdateEventStatus>,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const updated = await EventModel.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!updated) return next(createHttpError(404, "Event not found"));
-    res.status(200).json(updated);
+    const updatedEvent = await EventService.updateEvent(req.params.id, req.body);
+    if (!updatedEvent) {
+      return next(createHttpError(404, "Event not found"));
+    }
+    res.status(200).json(updatedEvent);
   } catch (err) {
     next(createHttpError(400, "Failed to update event"));
   }
@@ -170,22 +174,16 @@ export async function deleteManyEvents(
 
 // PATCH http://localhost:5174/api/admin/events/:id/audit   { status: "APPROVED" | "REJECTED" }
 export async function auditEvent(
-  req: Request<{ id: string }, unknown, { status: "APPROVED" | "REJECTED" }>,
+  req: Request<{ id: string }, unknown, AdminUpdateEventStatus>,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const { status } = req.body;
-    if (!["APPROVED", "REJECTED"].includes(status))
+    const adminUpdateEventStatus = await EventService.updateEvent(req.params.id, req.body);
+    if (!adminUpdateEventStatus) {
       return next(createHttpError(400, "Invalid status"));
-
-    const event = await EventModel.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
-    if (!event) return next(createHttpError(404, "Event not found"));
-    res.status(200).json(event);
+    }
+    res.status(200).json(adminUpdateEventStatus);
   } catch (err) {
     next(createHttpError(500, "Failed to audit event"));
   }

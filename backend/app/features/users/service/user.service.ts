@@ -43,7 +43,7 @@ export class UserService {
           .lean();
 
         console.log(
-          `User ${userId} updated:`,
+          `User ${userId} updated: \n`,
           Object.keys(data).length ? data : '(no changes)'
         );
 
