@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button, Modal } from "react-bootstrap";
 import { Formik, Form as FormikForm } from 'formik';
 import type { CreateEventBody, EventDetailsModalProps } from "../../types";
-import { CreateAnEventFormValidationSchema } from "../../formValidation";
 import { EventFormFields } from "./CreateEventFormFields";
 import { DeleteEventModal } from "./DeleteEventModal";
 

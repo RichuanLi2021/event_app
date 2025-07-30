@@ -23,7 +23,7 @@ import { toast } from 'react-toastify';
 
 export const ROLE_BLOCKS = {
   ADMIN: [
-    { title: 'Pending Events', status: EventStatus.Pending},
+    { title: 'Pending Events', status: EventStatus.Pending },
     { title: 'Approved Events', status: EventStatus.Approved },
     { title: 'Rejected Events', status: EventStatus.Rejected },
   ],
@@ -35,7 +35,7 @@ export const ROLE_BLOCKS = {
   USER: [
     { title: 'Booked Events', status: EventStatus.Booked },
     { title: 'Wait-listed', status: EventStatus.Waitlisted },
-    { title: 'Cancelled Events', status: EventStatus.Cancelled  },
+    { title: 'Cancelled Events', status: EventStatus.Cancelled },
   ],
 } as const;
 
@@ -53,7 +53,7 @@ function EventBookings() {
   
   const { currentUserId, userRole, currentUserEvents, events, loading, error } = useAppSelector((state) => ({
     currentUserId: state.auth.currentUser?._id,
-    userRole: state.auth.currentUser?.role,    // use this to determine what view to render for different roles
+    userRole: state.auth.currentUser?.role,
     currentUserEvents: state.events.currentUserEvents,
     events: state.events.events,
     loading: state.events.loading,
