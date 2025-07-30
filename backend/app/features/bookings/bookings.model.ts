@@ -13,10 +13,14 @@ const BookingSchema = new Schema<Booking>(
         ref: 'UserId',  
         required: true 
     },
+    eventTitle: {
+        type: String,
+        required: true
+    },
     status: {
         type: String, 
         enum: Object.values(BookingStatus), 
-        default: BookingStatus.Booked 
+        default: BookingStatus.Inactive
     },
   },
   { timestamps: true }

@@ -360,9 +360,8 @@ function EventBookings() {
                             sx={{ width: 56, height: 56 }}
                           />
                         </ListItemAvatar>
-                                                  <ListItemText
+                          <ListItemText
                             primary={
-                              userRole === 'ADMIN' ? (
                                 <Typography
                                   component="span"
                                   sx={{
@@ -378,9 +377,6 @@ function EventBookings() {
                                 >
                                   {event.title || 'Untitled Event'}
                                 </Typography>
-                              ) : (
-                                event.title || 'Untitled Event'
-                              )
                             }
                             secondary={`${event.date ? new Date(event.date).toLocaleDateString() : 'No date'} · ${event.location || 'No location'}`}
                             sx={{ 

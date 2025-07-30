@@ -14,13 +14,11 @@ export const EventList = ({ selectedCategory }: EventListProps) => {
   const [loading, setLoading] = useState(false);
 
   // Select pieces of state
-  const { 
-    events: events, 
-    loading: eventsLoading, 
-    error 
-  } = useAppSelector(
-    (state) => state.events
-  );
+  const { events, loading: reduxLoading, error } = useAppSelector((state) => ({
+   events: state.events.events,
+   loading: state.events.loading,
+   error: state.events.error
+  }));
 
   // Fetch events by category when category changes
   useEffect(() => {
@@ -28,12 +26,12 @@ export const EventList = ({ selectedCategory }: EventListProps) => {
       setLoading(true);
       try {
         if (selectedCategory === "All") {
-          // Use existing events from Redux state
-          setFilteredEvents(events);
+          const approvedEvents = events.filter(event => event.status === 'APPROVED');
+          setFilteredEvents(approvedEvents);
         } else {
-          // Fetch events by category from backend
           const response = await api.get(`/events/categories/${selectedCategory}`);
-          setFilteredEvents(response.data);
+          const approvedEvents = response.data.filter((event: any) => event.status === 'APPROVED');
+          setFilteredEvents(approvedEvents);
         }
       } catch (error) {
         console.error("Failed to fetch events by category:", error);
@@ -53,14 +51,14 @@ export const EventList = ({ selectedCategory }: EventListProps) => {
 
   return (
     <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-5 py-4">
-      {loading && <p className="text-center">Loading events…</p>}
+      {(loading || reduxLoading) && <p className="text-center">Loading events…</p>}
       {error && (
         <p className="text-center text-red-600">
           Failed to load events: {error}
         </p>
       )}
 
-      {!loading && !error && (
+      {!loading && !reduxLoading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredEvents.map((event) => (
             <EventCard
