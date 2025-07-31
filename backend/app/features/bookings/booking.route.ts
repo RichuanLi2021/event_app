@@ -1,13 +1,9 @@
 import { Router } from "express";
+import * as bookingController from "./booking.controller";
 import { authenticate } from "../../global_middleware/authenticator";
-import * as userBookingController from "./booking.controller"
 
-export const userBookingRouter = Router();
-userBookingRouter.use(authenticate);
+const userBookingRouter = Router();
 
-userBookingRouter.put('/:id', userBookingController.userBooking);
+userBookingRouter.post("/:eventId", authenticate, bookingController.bookEventForUser);
 
-
-
-
-
+export default userBookingRouter;

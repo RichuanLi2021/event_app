@@ -89,6 +89,11 @@ export async function adminUpdateEventStatus(eventId: string, status: 'APPROVED'
     }
 }
 
+export async function bookEvent(eventId: string): Promise<any> {
+    const { data } = await api.post(`/booking/${eventId}`);
+    return data;
+  }
+
 export async function deleteEvent(id: string): Promise<DeletedEvent> {
     try {
         const { data } = await api.delete(`/events/${id}`);

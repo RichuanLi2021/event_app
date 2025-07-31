@@ -61,12 +61,11 @@ export const logoutUser = ():
     try {
       await authApi.logout();
       dispatch({ type: AuthActionTypes.LOGOUT });
-
-      await persistor.flush();
       await persistor.purge();
       // Only access localStorage on client side
       if (typeof window !== 'undefined') {
-        localStorage.removeItem("persist:auth"); // force remove if purge failed to clear
+        localStorage.removeItem("persist:auth");
+        localStorage.removeItem("persist:events"); // force remove if purge failed to clear
       }
     } catch (err) {
       console.error("Logout failed:", err);
