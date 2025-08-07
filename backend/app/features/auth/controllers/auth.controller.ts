@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { AuthService } from "../service/auth.service";
 import { signupSchema, signinSchema } from "../../../zodSchema";
-import { env } from "../../../config/env";
+import { parsedEnv } from "../../../config/env";
 
 // POST / – signup a account
 export async function signup(req: Request, res: Response, next: NextFunction) {
@@ -20,7 +20,7 @@ export async function signIn(req: Request, res: Response, next: NextFunction) {
     
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
-      secure: env.NODE_ENV === "production",
+      secure: parsedEnv.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -54,7 +54,7 @@ export const logout: RequestHandler = async (req, res, next) => {
     }
     res.clearCookie("refresh_token", {
       httpOnly: true,
-      secure: env.NODE_ENV === "production",
+      secure: parsedEnv.NODE_ENV === "production",
       sameSite: "strict",
     });
     res.status(204).end();

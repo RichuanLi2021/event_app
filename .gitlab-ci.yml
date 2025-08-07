@@ -3,32 +3,42 @@ stages:
   - test
   - build
 
+# Only save NON-SENSITIVE variables here
 variables:
   NODE_VERSION: "20"
+  VITE_API_BASE_URL: "http://localhost:5174"
+  VITE_API_PREFIX: "/api"
+  VITE_ENABLE_MOCK_DATA: "false"
+  VITE_APP_NAME: "EventFlow"
+  VITE_APP_VERSION: "1.0.0"
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
+    - node_modules/
+    - package-lock.json/
     - frontend/node_modules/
+    - frontend/package-lock.json
     - backend/node_modules/
+    - backend/package-lock.json
 
 install:
   stage: install
   image: node:20
   script:
     - echo "📦 Installing root, frontend, and backend deps"
-    - npm install
-    - cd frontend  && rm -rf node_modules package-lock.json && npm install
-    - cd ../backend && rm -rf node_modules package-lock.json && npm install
+    - rm -rf node_modules package-lock.json && npm install #root
+    - cd frontend  && rm -rf node_modules package-lock.json && npm install #frontend
+    - cd ../backend && rm -rf node_modules package-lock.json && npm install #backend
   # No artifacts are needed here
 
 test:
   stage: test
   image: node:20
   script:
-    - echo "🧪 Running type-checks / tests"
-    - cd frontend  && npm run typecheck || true
-    - cd ../backend && npm test || true
+    - echo "🧪 Running type-checks/tests"
+    - cd frontend && npm run typecheck
+    - cd ../backend && npm test
 
 build:
   stage: build
@@ -38,6 +48,6 @@ build:
     - npm run build
   artifacts:
     paths:
-      - frontend/dist/
-      - backend/build/
+      - frontend/build/client/
+      - backend/dist/
     expire_in: 2 weeks

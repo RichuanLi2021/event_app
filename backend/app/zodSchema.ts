@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 // auth
 export const signupSchema = z.object({
@@ -6,7 +6,7 @@ export const signupSchema = z.object({
     email: z.string(),
     password: z.string(),
     phone: z.string(),
-    role: z.enum(['USER', 'ORGANIZER']),
+    role: z.enum(['USER', 'ORGANIZER', 'ADMIN']),
     receiveUpdates: z.boolean()
 })
 
@@ -17,3 +17,6 @@ export const signinSchema = z.object({
 })
 
 //Events
+export const createEventSchema = z.object({
+    
+})

@@ -1,6 +1,7 @@
 import { User } from "../types/user.type";
 import { UserModel } from "../models/user.model";
 import { UserUpdateInput } from "../types/user.type";
+import { date } from "zod";
 
 const SAFE_PROJECTION = '-password -__v';
 
@@ -29,14 +30,31 @@ export class UserService {
 
     // User or Admin can update
     static async updateOne(userId: string, data: UserUpdateInput) {
-        return UserModel.findByIdAndUpdate(
-            userId,
-            data,
-            { new: true, runValidators: true, fields: SAFE_PROJECTION }
-        ).lean();
+      try {
+        const updated = await UserModel.findByIdAndUpdate(
+          userId,
+          { $set: data },
+          {
+            new: true,
+            runValidators: true,
+          }
+        )
+          .select(SAFE_PROJECTION)
+          .lean();
+
+        console.log(
+          `User ${userId} updated: \n`,
+          Object.keys(data).length ? data : '(no changes)'
+        );
+
+        return updated;
+      } catch (err: any) {
+        console.error('Update failed', err.message);
+        throw err;
+      }
     }
 
-    // Delete 
+    // Delete -- Incomplete
     static async deleteOne(userId: string): Promise<boolean> {
         const res = await UserModel.deleteOne({ _id: userId });
         return res.deletedCount === 1;

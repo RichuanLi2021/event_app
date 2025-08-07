@@ -3,11 +3,11 @@ import { Box } from '@mui/material';
 import ProfileSidebar from './ProfileSidebar';
 import ProfileMainContent from './ProfileMainContent';
 
-const SECTIONS = ['Event Bookings', 'Personal Calendar', 'Chat Room'] as const;
+const SECTIONS = ['User Information', 'Event Bookings', 'Calendar', 'Chat Room'] as const;
 type Section = typeof SECTIONS[number];
 
 export default function ProfileDashboard() {
-  const [selected, setSelected] = React.useState<Section>('Event Bookings');
+  const [selected, setSelected] = React.useState<Section>('User Information');
 
   return (
     <Box sx={{ display: 'flex', minHeight: '70vh', gap: 4 }}>

@@ -1,4 +1,4 @@
-import { env } from "../../../config/env";
+import { parsedEnv } from "../../../config/env";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AuthticatedUser, LeanUser, SigninUser, SignupUser } from "../../users/types/user.type";
@@ -13,13 +13,20 @@ export class AuthService {
 
         if (data.name?.trim() === '') delete (data as any).name;
         
-        const user = await UserModel.create({ ...data, password: hashPassword });
-        const { _id, name, email, role } = user.toObject() as LeanUser;
+        const user = await UserModel.create({ 
+            ...data, 
+            password: 
+            hashPassword, 
+            status: "Active" 
+        });
+        const { _id, name, email, phone, role, status } = user.toObject() as LeanUser;
         const registered_User = { 
-                    id: _id.toString(), 
+                    _id: _id.toString(), 
                     name, 
-                    email, 
-                    role 
+                    email,
+                    phone, 
+                    role,
+                    status 
                 }
         return registered_User;
     }
@@ -40,25 +47,33 @@ export class AuthService {
         const ok = await bcrypt.compare(password, user.password);
         if (!ok) throw new Error("Invalid credentials");
 
-        const { _id, name, email: userEmail, role } = user;
+        const { _id, name, email: userEmail, phone, role, status, createdAt } = user;
 
         const accessToken = this.signToken(user); 
         const refreshToken = this.refreshToken(user);
 
         return {
-            user: { id: _id.toString(), name, email, role }, 
+            user: { 
+                _id: _id.toString(), 
+                name, 
+                email, 
+                phone, 
+                role, 
+                status, 
+                createdAt 
+            }, 
             token: accessToken,
             refreshToken
         };
     }
 
     static async logout(refreshToken: string): Promise<void> {
-      if (!refreshToken || !env.JWT_REFRESH_SECRET) return;
+      if (!refreshToken || !parsedEnv.JWT_REFRESH_SECRET) return;
 
       try {
         const { exp } = jwt.verify(
           refreshToken,
-          env.JWT_REFRESH_SECRET
+          parsedEnv.JWT_REFRESH_SECRET
         ) as jwt.JwtPayload;
 
         const expiryDate = exp ? new Date(exp * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -79,10 +94,10 @@ export class AuthService {
     }
 
     private static signToken(user: LeanUser): string {
-        if (!env.JWT_SECRET) throw new Error("Jwt tokwn is missing!");
+        if (!parsedEnv.JWT_SECRET) throw new Error("Jwt tokwn is missing!");
         const payload = { sub: user._id, role: user.role, type: "access-jwt"};
-        const token = jwt.sign(payload, env.JWT_SECRET, { 
-            expiresIn: "5m",
+        const token = jwt.sign(payload, parsedEnv.JWT_SECRET, { 
+            expiresIn: "10m",
             issuer: "event-flow-server",
             audience: `event-flow-client-${user.name}`
         });
@@ -90,9 +105,9 @@ export class AuthService {
     }
 
     private static refreshToken(user: LeanUser): string {
-        if (!env.JWT_REFRESH_SECRET) throw new Error("Refresh token is missing!");
+        if (!parsedEnv.JWT_REFRESH_SECRET) throw new Error("Refresh token is missing!");
         const payload = { sub: user._id, role: user.role, type: "refresh-jwt" };
-        const refresh_token = jwt.sign(payload, env.JWT_REFRESH_SECRET, {
+        const refresh_token = jwt.sign(payload, parsedEnv.JWT_REFRESH_SECRET, {
             expiresIn: "7d",
             issuer: "event-flow-server",
                 audience: `event-flow-client-${user.name}`
@@ -101,13 +116,13 @@ export class AuthService {
     }
 
     static async rotateAccessToken(refreshToken: string): Promise<string> {
-        if (!env.JWT_REFRESH_SECRET) {
+        if (!parsedEnv.JWT_REFRESH_SECRET) {
             throw new Error("JWT_REFRESH_SECRET is not set");
         }
 
         let payload: jwt.JwtPayload;
         try {
-            payload = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as jwt.JwtPayload;
+            payload = jwt.verify(refreshToken, parsedEnv.JWT_REFRESH_SECRET) as jwt.JwtPayload;
         } catch {
             throw new Error("Invalid or expired refresh token");
         }

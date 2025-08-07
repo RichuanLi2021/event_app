@@ -3,6 +3,11 @@ import { Event } from '../types/event.type';
 
 const EventSchema = new Schema<Event>(
   {
+    organizer_id: { 
+      type: Schema.Types.ObjectId, 
+      ref: 'User', 
+      required: true 
+    },
     title: { 
       type: String, 
       required: true 
@@ -10,6 +15,10 @@ const EventSchema = new Schema<Event>(
     description: {
       type: String,
       required: true
+    },
+    imageUrl: {
+      type: String,
+      required: false
     },
     category: {
       type: String,
@@ -21,12 +30,11 @@ const EventSchema = new Schema<Event>(
     },
     location: {
       type: String,
-      enum: ['Online', 'On-site'], 
       required: true
     },
     capacity: {
       type: Number,
-      required: false
+      required: true
     },
     costs: {
       type: String,
@@ -34,16 +42,12 @@ const EventSchema = new Schema<Event>(
     },
     status: { 
       type: String, 
-      enum: ['PENDING','APPROVED','REJECTED'], 
+      enum: ['PENDING','APPROVED','REJECTED','CANCELLED'], 
       default: 'PENDING' 
-    },
-    organizer: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true 
     }
   },
   { timestamps: true }
 );
 
+EventSchema.index({ organizer_id: 1 });
 export const EventModel = model<Event>('Event', EventSchema);

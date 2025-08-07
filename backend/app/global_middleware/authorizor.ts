@@ -24,7 +24,7 @@ export function allowSelfOrAdmin(
   next: NextFunction
 ): void {
     // admin has access to user profile temporary
-  if (req.user?.role === 'ADMIN' || req.user?.id === req.params.id) {
+  if (req.user?.role === 'ADMIN' || req.user?._id === req.params.id) {
     return next();
   }
   res.status(403).json({ message: 'Forbidden' });

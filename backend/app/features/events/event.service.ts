@@ -1,38 +1,85 @@
 import {EventModel} from "./models/event.model";
-import { UpdateQuery } from "mongoose";
-import { CreateAndUpdateEventInput, LeanEvent } from "./types/event.type";
+import { Types, UpdateQuery } from "mongoose";
+import { CreateEventInput, UpdateEventInput, LeanEvent, UpdateEventStatus, AdminUpdateEventStatus } from "./types/event.type";
 
 export class EventService {
   // public
   static async getAll() {
-    return await EventModel.find().sort({ createdAt: -1 }).exec();
+    const events = await EventModel.find().sort({ createdAt: -1 }).exec();
+    console.log(`Loaded Events: ${events}`)
+    return events;
+  }
+
+  static async getAllByUsrId(userId: string) {
+    const usrEvents = await EventModel.find({ 
+      organizer_id: new Types.ObjectId(userId)
+      })
+      .populate("organizer_id", "name")
+      .lean()
+      .exec();
+    return usrEvents
   }
 
   static async getByCategory(category: string) {
-    return await EventModel.find({ category }).exec();
+    const categoryRegex = new RegExp(category, 'i'); // case-insensitive search
+    return await EventModel.find({ category: categoryRegex }).exec();
   }
 
   static async getOne(id: string) {
     return await EventModel.findById(id).exec();
   }
 
+  // search events
+  static async searchEvents(query: string, location?: string) {
+    const searchRegex = new RegExp(query, 'i'); // case-insensitive search
+    
+    const searchQuery: any = {
+      $or: [
+        { title: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex },
+        { location: searchRegex }
+      ]
+    };
+
+    // Add location filter if provided
+    if (location && location !== "All Locations") {
+      searchQuery.location = new RegExp(location, 'i');
+    }
+
+    return await EventModel.find(searchQuery).sort({ createdAt: -1 }).exec();
+  }
+
   // organizer
-  static async createEvent(data: CreateAndUpdateEventInput): Promise<LeanEvent> {
-    const { title, category, date, location, costs } = data;
-    if (!title || !category || !date || !location || !costs) {
+  static async createEvent(data: CreateEventInput & { organizer_id: Types.ObjectId }): Promise<LeanEvent> {
+    const { title, category, description, date, location, capacity, costs } = data;
+    
+    if (!title || !category || !description || !date || !location || !capacity || !costs) {
+      const missingFields = [];
+      if (!title) missingFields.push('title');
+      if (!category) missingFields.push('category');
+      if (!description) missingFields.push('description');
+      if (!date) missingFields.push('date');
+      if (!location) missingFields.push('location');
+      if (!capacity) missingFields.push('capacity');
+      if (!costs) missingFields.push('costs');
+      
+      console.error(`Missing required fields: ${missingFields.join(', ')}`);
       throw new Error(
-        "Missing required fields: title, category, date, location, and costs are mandatory."
+        `Missing required fields: ${missingFields.join(', ')} are mandatory.`
       );
     }
     const created = await EventModel.create(data);
     return created.toObject() as LeanEvent;
   }
 
-  static async update(
+  static async updateEvent(
     id: string,
-    patch: UpdateQuery<CreateAndUpdateEventInput>
+    patch: UpdateEventInput | UpdateEventStatus | AdminUpdateEventStatus
   ): Promise<LeanEvent | null> {
-    return EventModel.findByIdAndUpdate(id, patch, {
+    // full event updates or status-only updates
+    const updateCheck = typeof patch === 'string' ? {status: patch} : patch;
+    return EventModel.findByIdAndUpdate(id, updateCheck, {
         new: true,
         runValidators: true
       })

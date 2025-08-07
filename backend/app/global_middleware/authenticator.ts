@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
-import { env } from "../config/env";
+import { parsedEnv } from "../config/env";
 
 export const authenticate: RequestHandler = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -10,12 +10,12 @@ export const authenticate: RequestHandler = (req, res, next) => {
   }
 
   try {
-    const payload = jwt.verify( token, env.JWT_SECRET ) as { 
+    const payload = jwt.verify( token, parsedEnv.JWT_SECRET ) as { 
       sub: string; 
       role: string 
     };
     req.user = { 
-      id: payload.sub, 
+      _id: payload.sub, 
       role: payload.role as any 
     };
     next();

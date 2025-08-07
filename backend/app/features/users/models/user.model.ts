@@ -7,12 +7,16 @@ const UserSchema = new Schema<User>(
       type: String,
       required: false,
       unique: true,
-      sparse: true
     },
     email:  { 
       type: String, 
       required: true, 
       unique: true 
+    },
+    phone: {
+      type: String,
+      required: false,
+      unique: false,
     },
     password:{ 
       type: String, 

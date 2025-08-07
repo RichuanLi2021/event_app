@@ -66,17 +66,25 @@ frontend
 backend
 ```
 ├── app/
+├── config/
+|   ├── database.ts/
+|   ├── env.ts/  
 ├── features/
 |   ├── auth/ 
 |       ├── controllers/
 |       ├── routes/
 |       ├── service/
-|       ├── middleware/
+|       ├── types/
+|       ├── model/
 |   ├── other service foler/     
-├── global_middleware/  
+├── global_middleware/
+|       ├── authenticator.ts/
+|       ├── authorizor.ts/
 ├── global_types/
 ├── index.ts
 ├── server.ts
+├── swagger.ts
+├── zodSchema.ts
 ```
 
 ## Building for Production

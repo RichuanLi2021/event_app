@@ -4,7 +4,7 @@ import type { User } from "../features/users/types/user.type";
 declare global {
   namespace Express {
     interface AuthPayload {
-      id: string;
+      _id: string;
       role: User['role'];
     }
     interface Request {

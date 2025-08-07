@@ -26,8 +26,11 @@ export async function getALL(req: Request, res: Response, next: NextFunction): P
 // UPDATE / -update an user
 export async function updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-        const updated = await UserService.updateOne(req.params.id, req.body);
-        res.status(201).json(updated);
+        const { _id, updateFields } = req.body;
+        console.log(`*** Upcoming updates: ${updateFields} to user: ${_id}`
+        );
+        const updated = await UserService.updateOne(_id, updateFields);
+        res.status(200).json(updated);
     } catch(err) {
         next(err);
     }

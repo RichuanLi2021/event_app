@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, Typography } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Link as RouterLink} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -11,6 +12,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   alignSelf: 'center',
   width: '100%',
   padding: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
   gap: theme.spacing(2),
   margin: 'auto',
   boxShadow:
@@ -30,8 +32,11 @@ const Card = styled(MuiCard)(({ theme }) => ({
 
 const SignContainer = styled(Stack)(({ theme }) => ({
   position: 'relative',
-  height: '100dvh',
+  minHeight: '100dvh',
   padding: theme.spacing(2),
+  overflowY: 'auto',
+  display: 'flex',
+  alignItems: 'center',
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(4),
   },
@@ -43,6 +48,20 @@ export default function AuthLayout() {
       <CssBaseline />
       <SignContainer direction="column" justifyContent="center">
         <Card variant="outlined">
+          <Link to="/" style={{ textDecoration: 'none' }}>
+          {/* Logo */}
+            <Typography
+             variant="h5"
+             sx={{
+              color: '#f05537',
+              fontWeight: 'bold',
+               fontSize: '1.5rem',
+               textAlign: 'left',
+              }}
+            >
+             eventflow
+            </Typography>
+          </Link>
           <Outlet />
         </Card>
       </SignContainer>

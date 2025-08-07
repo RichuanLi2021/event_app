@@ -8,6 +8,10 @@ import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { toast } from 'react-toastify';
 import Link from '@mui/material/Link';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +25,11 @@ import type { FormikHelpers } from 'formik';
 export default function AuthForm({ mode }: AuthFormProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleClickShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
 
   const handleSignup = async (
   values: SignupValues,
@@ -32,7 +41,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setTimeout(() => navigate('/login'), 2500);
   } catch (err) {
     toast.error('Signup failed');
-    console.log(err)
+    
   } finally {
     setSubmitting(false);
   }
@@ -44,7 +53,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   ) => {
     const {user} = await dispatch(loginUser(values));
     toast.success(
-      `Loginin successful! Welcome ${user.name}`, 
+      `Login successful! Welcome ${user.name}`, 
       { autoClose: 2000 }
     );
     setTimeout(() => navigate('/account'), 2500);
@@ -67,7 +76,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
         onSubmit={handleSignup}
       >
         {({ errors, touched, isSubmitting }) => (
-          <Form noValidate>
+          <Form 
+            noValidate
+            style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '16px' }}
+            >
             {/* Full name */}
             <Box mb={2}>
               <Field name="name">
@@ -127,10 +139,23 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   <TextField
                     {...field}
                     fullWidth
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     label="Password"
                     error={touched.password && Boolean(errors.password)}
                     helperText={<ErrorMessage name="password" />}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 )}
               </Field>
@@ -143,10 +168,23 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   <TextField
                     {...field}
                     fullWidth
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     label="Confirm Password"
                     error={touched.confirmPassword && Boolean(errors.confirmPassword)}
                     helperText={<ErrorMessage name="confirmPassword" />}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle confirm password visibility"
+                            onClick={handleClickShowConfirmPassword}
+                            edge="end"
+                          >
+                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 )}
               </Field>
@@ -191,8 +229,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
               variant="contained"
               disabled={isSubmitting}
               sx={{ mb: 2 }}
+              className="signup-btn"
+              style={{ background: '#f15a29', color: 'white' }}
+              onMouseOver={e => (e.currentTarget.style.background = '#c94a1c')}
+              onMouseOut={e => (e.currentTarget.style.background = '#f15a29')}
             >
-              Sign up
+              Sign Up
             </Button>
 
             <Divider>
@@ -226,7 +268,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
       onSubmit={handleLogin}
     >
       {({ errors, touched, isSubmitting }) => (
-        <Form noValidate>
+        <Form 
+          noValidate
+          style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '16px' }}
+          >
           {/* Email */}
           <Box mb={2}>
             <Field name="email">
@@ -249,10 +294,23 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 <TextField
                   {...field}
                   fullWidth
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   label="Password"
                   error={touched.password && Boolean(errors.password)}
                   helperText={<ErrorMessage name="password" />}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               )}
             </Field>
@@ -282,8 +340,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
             variant="contained"
             disabled={isSubmitting}
             sx={{ mb: 2 }}
+            className="signup-btn"
+            style={{ background: '#f15a29', color: 'white' }}
+            onMouseOver={e => (e.currentTarget.style.background = '#c94a1c')}
+            onMouseOut={e => (e.currentTarget.style.background = '#f15a29')}
           >
-            Sign in
+            Sign In
           </Button>
 
           {/* Forgot & switch to signup */}

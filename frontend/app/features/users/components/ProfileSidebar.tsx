@@ -1,12 +1,14 @@
 import React from 'react';
 import { Card, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatIcon from '@mui/icons-material/Chat';
 
 const sidebarItems = [
+  { label: 'User Information', icon: <AccountCircleOutlinedIcon /> },
   { label: 'Event Bookings', icon: <EventIcon /> },
-  { label: 'Personal Calendar', icon: <CalendarMonthIcon /> },
+  { label: 'Calendar', icon: <CalendarMonthIcon /> },
   { label: 'Chat Room', icon: <ChatIcon /> },
 ] as const;
 
