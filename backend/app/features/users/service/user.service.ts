@@ -2,14 +2,20 @@ import { User } from "../types/user.type";
 import { UserModel } from "../models/user.model";
 import { UserUpdateInput } from "../types/user.type";
 import { date } from "zod";
+import { validateObjectId, validateObjectIds } from "../../../utils/validation";
 
 const SAFE_PROJECTION = '-password -__v';
 
 export class UserService {
     // get a single user's profile
     static async getOne(userId: string): Promise<User | null> {
+        const validUserId = validateObjectId(userId);
+        if (!validUserId) {
+            throw new Error("Invalid user ID format");
+        }
+        
         try {
-            return UserModel.findById(userId).select(SAFE_PROJECTION).lean();
+            return UserModel.findById(validUserId).select(SAFE_PROJECTION).lean();
         } catch(error) {
             throw new Error(`Invalid User ID ${error}`);
         }
@@ -30,9 +36,14 @@ export class UserService {
 
     // User or Admin can update
     static async updateOne(userId: string, data: UserUpdateInput) {
+      const validUserId = validateObjectId(userId);
+      if (!validUserId) {
+        throw new Error("Invalid user ID format");
+      }
+      
       try {
         const updated = await UserModel.findByIdAndUpdate(
-          userId,
+          validUserId,
           { $set: data },
           {
             new: true,
@@ -56,13 +67,23 @@ export class UserService {
 
     // Delete -- Incomplete
     static async deleteOne(userId: string): Promise<boolean> {
-        const res = await UserModel.deleteOne({ _id: userId });
+        const validUserId = validateObjectId(userId);
+        if (!validUserId) {
+            throw new Error("Invalid user ID format");
+        }
+        
+        const res = await UserModel.deleteOne({ _id: validUserId });
         return res.deletedCount === 1;
     }
 
     // Group delete -- Admin only
     static async deleteSome(ids: string[]) {
-        const res = await UserModel.deleteMany({ _id: { $in: ids } });
+        const validIds = validateObjectIds(ids);
+        if (validIds.length === 0) {
+            throw new Error("No valid user IDs provided");
+        }
+        
+        const res = await UserModel.deleteMany({ _id: { $in: validIds } });
         return { deleted: res.deletedCount ?? 0 };
     }
 }

@@ -1,6 +1,7 @@
 import {EventModel} from "./models/event.model";
-import { Types, UpdateQuery } from "mongoose";
+import { Types } from "mongoose";
 import { CreateEventInput, UpdateEventInput, LeanEvent, UpdateEventStatus, AdminUpdateEventStatus } from "./types/event.type";
+import { validateObjectId, validateObjectIds, sanitizeRegexString } from "../../utils/validation";
 
 export class EventService {
   // public
@@ -11,8 +12,13 @@ export class EventService {
   }
 
   static async getAllByUsrId(userId: string) {
+    const validUserId = validateObjectId(userId);
+    if (!validUserId) {
+      throw new Error("Invalid user ID format");
+    }
+    
     const usrEvents = await EventModel.find({ 
-      organizer_id: new Types.ObjectId(userId)
+      organizer_id: validUserId
       })
       .populate("organizer_id", "name")
       .lean()
@@ -21,17 +27,31 @@ export class EventService {
   }
 
   static async getByCategory(category: string) {
-    const categoryRegex = new RegExp(category, 'i'); // case-insensitive search
+    if (!category || typeof category !== 'string') {
+      throw new Error("Invalid category parameter");
+    }
+    
+    const sanitizedCategory = sanitizeRegexString(category);
+    const categoryRegex = new RegExp(sanitizedCategory, 'i'); // case-insensitive search
     return await EventModel.find({ category: categoryRegex }).exec();
   }
 
   static async getOne(id: string) {
-    return await EventModel.findById(id).exec();
+    const validId = validateObjectId(id);
+    if (!validId) {
+      throw new Error("Invalid event ID format");
+    }
+    return await EventModel.findById(validId).exec();
   }
 
   // search events
   static async searchEvents(query: string, location?: string) {
-    const searchRegex = new RegExp(query, 'i'); // case-insensitive search
+    if (!query || typeof query !== 'string') {
+      throw new Error("Invalid search query");
+    }
+    
+    const sanitizedQuery = sanitizeRegexString(query);
+    const searchRegex = new RegExp(sanitizedQuery, 'i'); // case-insensitive search
     
     const searchQuery: any = {
       $or: [
@@ -43,8 +63,9 @@ export class EventService {
     };
 
     // Add location filter if provided
-    if (location && location !== "All Locations") {
-      searchQuery.location = new RegExp(location, 'i');
+    if (location && location !== "All Locations" && typeof location === 'string') {
+      const sanitizedLocation = sanitizeRegexString(location);
+      searchQuery.location = new RegExp(sanitizedLocation, 'i');
     }
 
     return await EventModel.find(searchQuery).sort({ createdAt: -1 }).exec();
@@ -77,9 +98,14 @@ export class EventService {
     id: string,
     patch: UpdateEventInput | UpdateEventStatus | AdminUpdateEventStatus
   ): Promise<LeanEvent | null> {
+    const validId = validateObjectId(id);
+    if (!validId) {
+      throw new Error("Invalid event ID format");
+    }
+    
     // full event updates or status-only updates
     const updateCheck = typeof patch === 'string' ? {status: patch} : patch;
-    return EventModel.findByIdAndUpdate(id, updateCheck, {
+    return EventModel.findByIdAndUpdate(validId, updateCheck, {
         new: true,
         runValidators: true
       })
@@ -88,15 +114,27 @@ export class EventService {
   }
 
   static async deleteOne(id: string) {
-    return await EventModel.findByIdAndDelete(id).exec();
+    const validId = validateObjectId(id);
+    if (!validId) {
+      throw new Error("Invalid event ID format");
+    }
+    return await EventModel.findByIdAndDelete(validId).exec();
   }
 
   static async deleteMany(ids: string[]) {
-    return await EventModel.deleteMany({ _id: { $in: ids } }).exec();
+    const validIds = validateObjectIds(ids);
+    if (validIds.length === 0) {
+      throw new Error("No valid event IDs provided");
+    }
+    return await EventModel.deleteMany({ _id: { $in: validIds } }).exec();
   }
 
   // admin
   static async audit(id: string, status: "APPROVED" | "REJECTED") {
-    return await EventModel.findByIdAndUpdate(id, { status }, { new: true }).exec();
+    const validId = validateObjectId(id);
+    if (!validId) {
+      throw new Error("Invalid event ID format");
+    }
+    return await EventModel.findByIdAndUpdate(validId, { status }, { new: true }).exec();
   }
 }
