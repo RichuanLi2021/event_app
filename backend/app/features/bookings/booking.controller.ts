@@ -5,6 +5,53 @@ import { BookingStatus } from "./bookings.type";
 import { UserModel } from "../users/models/user.model";
 import { validateObjectId } from "../../utils/validation";
 
+/**
+ * @swagger
+ * /bookings/{eventId}:
+ *   post:
+ *     summary: Book an event
+ *     tags: [Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Event ID to book
+ *     responses:
+ *       201:
+ *         description: Event booked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Booking'
+ *       400:
+ *         description: Invalid event ID or user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Event or user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Event already booked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function bookEvent(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?._id;
@@ -62,6 +109,30 @@ export async function bookEvent(req: Request, res: Response, next: NextFunction)
   }
 }
 
+/**
+ * @swagger
+ * /bookings:
+ *   get:
+ *     summary: Get user's bookings
+ *     tags: [Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User bookings retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Booking'
+ *       401:
+ *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function getUserBookings(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?._id;
