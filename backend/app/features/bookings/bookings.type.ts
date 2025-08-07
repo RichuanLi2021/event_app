@@ -11,6 +11,7 @@ export enum BookingStatus {
 export interface Booking {
   eventId: Types.ObjectId;
   userId: Types.ObjectId;
+  userName: string;
   eventTitle: string;
   status: BookingStatus;
   createdAt: Date;

@@ -12,6 +12,7 @@ export const EventDetailsModal = ({
   onUpdate,
   onDelete,
   isAdmin = false,
+  userRole = 'USER',
 }: EventDetailsModalProps & { isAdmin?: boolean }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -163,7 +164,8 @@ export const EventDetailsModal = ({
               <Button variant="secondary" type="button" onClick={handleClose}>
                 Close
               </Button>
-              {!isAdmin && (
+              {/* Only organizers can edit and delete events */}
+              {userRole === 'ORGANIZER' && (
                 <>
                   <Button 
                     variant="primary" 

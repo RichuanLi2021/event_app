@@ -4,6 +4,7 @@ import { authenticate } from "../../global_middleware/authenticator";
 
 const userBookingRouter = Router();
 
-userBookingRouter.post("/:eventId", authenticate, bookingController.bookEventForUser);
+userBookingRouter.post("/:eventId", authenticate, bookingController.bookEvent);
+userBookingRouter.get("/", authenticate, bookingController.getUserBookings);
 
 export default userBookingRouter;

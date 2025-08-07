@@ -8,14 +8,18 @@ const BookingSchema = new Schema<Booking>(
         ref: 'EventId', 
         required: true 
     },
+    eventTitle: {
+        type: String,
+        required: true
+    },
     userId: { 
         type: Schema.Types.ObjectId, 
         ref: 'UserId',  
         required: true 
     },
-    eventTitle: {
-        type: String,
-        required: true
+    userName: {
+      type: String,
+      required: true
     },
     status: {
         type: String, 

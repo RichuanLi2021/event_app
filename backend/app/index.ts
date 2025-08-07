@@ -15,6 +15,6 @@ apiRouter.use('/events', privateEventRouter);
 apiRouter.use('/events', organizerEventRouter);
 apiRouter.use('/admin/events', adminEventRouter);
 
-apiRouter.use('/booking', userBookingRouter);
+apiRouter.use('/bookings', userBookingRouter);
 
 export default apiRouter;

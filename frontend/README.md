@@ -53,11 +53,12 @@ frontend
 ```
 ├── app/
 ├── features/
-|   ├── components/    # All page related components
-|   ├── services/         # All app page
-|   ├── theme/         # All const types go here
-|   ├── types/         # Global state management
-│   └── utils/         # helper functions can be saved here
+|   ├── feature1/ 
+|       ├── components/    # All page related components
+|       ├── services/      # Service layer
+|       ├── theme/         # The unified layout of the feature
+|       ├── types/         # Type and interface management
+│       └── utils/         # Helper functions
 ├── pages/  
 ├── redux/             # Global state management
 |   ├── actions/       # Action creators categorized by feature

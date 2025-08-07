@@ -16,6 +16,7 @@ import { Modal, Button as BootstrapButton } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '~/redux/hooks';
 import { shallowEqual } from 'react-redux';
 import { createEventAction, fetchAllEventsById, fetchAllEvents, updateEvent, updateEventStatus, deleteEvent, adminUpdateEventStatus } from '~/redux/actions/events/Event-actionCreators';
+import { bookEvent, fetchUserBookings } from '~/redux/actions/booking/Booking-actionCreators';
 import { EventStatus, type CreateEventBody, type UserEvent } from '~/features/events/types';
 import { CreateEvent } from './OperationOnEvents/CreateNewEvent';
 import { EventDetailsModal } from './OperationOnEvents/ViewEventDetailsModal';
@@ -33,6 +34,7 @@ export const ROLE_BLOCKS = {
     { title: 'Cancelled Events', status: EventStatus.Cancelled },
   ],
   USER: [
+    { title: 'Available Events', status: EventStatus.Approved },
     { title: 'Booked Events', status: EventStatus.Booked },
     { title: 'Wait-listed', status: EventStatus.Waitlisted },
     { title: 'Cancelled Events', status: EventStatus.Cancelled },
@@ -50,14 +52,17 @@ function EventBookings() {
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [rejectEventId, setRejectEventId] = useState<string | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [bookEventId, setBookEventId] = useState<string | null>(null);
+  const [showBookModal, setShowBookModal] = useState(false);
   
-  const { currentUserId, userRole, currentUserEvents, events, loading, error } = useAppSelector((state) => ({
+  const { currentUserId, userRole, currentUserEvents, events, loading, error, bookedEvents } = useAppSelector((state) => ({
     currentUserId: state.auth.currentUser?._id,
     userRole: state.auth.currentUser?.role,
     currentUserEvents: state.events.currentUserEvents,
     events: state.events.events,
     loading: state.events.loading,
-    error: state.events.error,  
+    error: state.events.error,
+    bookedEvents: state.bookings.bookedEvents,
 }), shallowEqual);
 
   const blocks = ROLE_BLOCKS[(userRole ?? 'USER') as keyof typeof ROLE_BLOCKS];
@@ -185,6 +190,29 @@ function EventBookings() {
     setShowRejectModal(true);
   };
 
+  const handleBookEvent = async (eventId: string) => {
+    try {
+      await dispatch(bookEvent(eventId));
+      toast.success('Event booked successfully!');
+      setShowBookModal(false);
+      setBookEventId(null);
+      
+      // Refresh events to update the UI
+      if (userRole === 'USER') {
+        await dispatch(fetchAllEvents());
+        await dispatch(fetchUserBookings());
+      }
+    } catch (error: any) {
+      console.error('Failed to book event:', error);
+      toast.error(error.message || 'Failed to book event. Please try again.');
+    }
+  };
+
+  const handleBookClick = (eventId: string) => {
+    setBookEventId(eventId);
+    setShowBookModal(true);
+  };
+
   useEffect(() => {
     if (fetchedRef.current || loading) {
       return;
@@ -196,6 +224,21 @@ function EventBookings() {
           await dispatch(fetchAllEvents());
         } catch (err) {
           console.log(`Failed to fetch all events for admin: ${err}`);
+        } finally {
+          fetchedRef.current = true;
+        }
+      })();
+    }
+    else if (userRole === 'USER') {
+      console.log("Dispatching fetchAllEvents and fetchUserBookings for USER");
+      (async () => {
+        try {
+          // Fetch all events for available events display
+          await dispatch(fetchAllEvents());
+          // Fetch user's booked events
+          await dispatch(fetchUserBookings());
+        } catch (err) {
+          console.log(`Failed to fetch events for user: ${err}`);
         } finally {
           fetchedRef.current = true;
         }
@@ -237,7 +280,7 @@ function EventBookings() {
   }
 
   // Determine which events to use based on user role
-  const eventsToDisplay = userRole === 'ADMIN' ? events : currentUserEvents;
+  const eventsToDisplay = userRole === 'ADMIN' || userRole === 'USER' ? events : currentUserEvents;
   
   if (!eventsToDisplay || eventsToDisplay.length === 0) {
     return (
@@ -256,8 +299,22 @@ function EventBookings() {
       )}
       <Box display="flex" flexDirection="column" gap={4}>
         {blocks.map(({ title, status }) => {
-          const filteredEvents = eventsToDisplay.filter((event: any) => 
-            event.status === status);
+          let filteredEvents;
+          if (userRole === 'USER' && status === 'APPROVED') {
+            // For available events, show all approved events
+            filteredEvents = events.filter((event: any) => event.status === status);
+          } else if (userRole === 'USER' && status === 'BOOKED') {
+            // For user's booked events, use the booking state
+            // We need to map booked events to their corresponding event details
+            const bookedEventIds = bookedEvents.map((booking: any) => booking.eventId);
+            filteredEvents = events.filter((event: any) => bookedEventIds.includes(event._id));
+          } else if (userRole === 'USER' && status !== 'APPROVED' && status !== 'BOOKED') {
+            // For user's waitlisted/cancelled events, show from their personal events
+            filteredEvents = currentUserEvents.filter((event: any) => event.status === status);
+          } else {
+            // For admin and organizer, use the default logic
+            filteredEvents = eventsToDisplay.filter((event: any) => event.status === status);
+          }
           return (
             <Card key={status} variant="outlined" sx={{ borderRadius: 2 }}>
               <CardContent sx={{ p: 3 }}>
@@ -332,7 +389,44 @@ function EventBookings() {
                                     View Details
                                   </Button>
                                   
-                                  {status !== 'CANCELLED' && (
+                                  {/* Book Event button - only for available events */}
+                                  {userRole === 'USER' && status === 'APPROVED' && (
+                                    <Button 
+                                      variant="outlined" 
+                                      color="primary" 
+                                      size="small"
+                                      onClick={() => handleBookClick(event._id)}
+                                      sx={{ 
+                                        fontSize: '0.75rem',
+                                        py: 0.5,
+                                        px: 1.5,
+                                        minWidth: 'auto'
+                                      }}
+                                    >
+                                      Book Event
+                                    </Button>
+                                  )}
+                                  
+                                  {/* Cancel button - only for user's own booked events */}
+                                  {userRole === 'USER' && status !== 'APPROVED' && status !== 'CANCELLED' && (
+                                    <Button 
+                                      variant="outlined" 
+                                      color="error" 
+                                      size="small"
+                                      onClick={() => handleCancelClick(event._id)}
+                                      sx={{ 
+                                        fontSize: '0.75rem',
+                                        py: 0.5,
+                                        px: 1.5,
+                                        minWidth: 'auto'
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  )}
+                                  
+                                  {/* Cancel button for organizers */}
+                                  {userRole === 'ORGANIZER' && status !== 'CANCELLED' && (
                                     <Button 
                                       variant="outlined" 
                                       color="error" 
@@ -410,6 +504,7 @@ function EventBookings() {
         onUpdate={handleUpdateEvent}
         onDelete={handleDeleteEvent}
         isAdmin={userRole === 'ADMIN'}
+        userRole={userRole}
       />
 
       {/* Cancel Confirmation Modal */}
@@ -467,6 +562,26 @@ function EventBookings() {
             </BootstrapButton>
             <BootstrapButton variant="danger" onClick={() => handleRejectEvent(rejectEventId)}>
               Yes, Reject Event
+            </BootstrapButton>
+          </Modal.Footer>
+        </Modal>
+      )}
+
+      {/* Book Confirmation Modal */}
+      {showBookModal && bookEventId && (
+        <Modal show={showBookModal} onHide={() => { setShowBookModal(false); setBookEventId(null); }}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Booking</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Are you sure you want to book this event? This action cannot be undone.
+          </Modal.Body>
+          <Modal.Footer>
+            <BootstrapButton variant="secondary" onClick={() => { setShowBookModal(false); setBookEventId(null); }}>
+              No, Keep Event
+            </BootstrapButton>
+            <BootstrapButton variant="primary" onClick={() => handleBookEvent(bookEventId)}>
+              Yes, Book Event
             </BootstrapButton>
           </Modal.Footer>
         </Modal>

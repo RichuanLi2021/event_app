@@ -63,6 +63,13 @@ export const enum EventStatus {
   Waitlisted = 'WAITLISTED',
 }
 
+export const enum EventBookingsStatus {
+  Booked = 'BOOKED',
+  Inactive = 'INACTIVE',
+  Cancelled = 'CANCELLED',
+  Waitlisted = 'WAITLISTED',
+}
+
 export const EVENT_STATUS_BY_ROLE = {
   ADMIN: [
     EventStatus.Pending,
@@ -147,12 +154,24 @@ export interface DeleteEventModalProps {
   eventTitle: string;
 }
 
+// Event Bookings
+export interface BookedEvent {
+  eventId: string;
+  eventTitle: string;
+  userId: string;
+  userName: string;
+  status: EventBookingsStatus;
+  createdAt: Date;
+  updatedAt: Date
+}
+
 export interface EventDetailsModalProps {
   show: boolean;
   onHide: () => void;
   event: UserEvent | null;
   onUpdate: (eventId: string, updatedEvent: CreateEventBody) => void;
   onDelete: (eventId: string) => void;
+  userRole?: string;
 }
 
 export interface EventCardProps {

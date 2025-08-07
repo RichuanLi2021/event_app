@@ -1,5 +1,5 @@
 import { api } from "~/api/central-axios";
-import type { CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UpdateEventStatus, UserEvents } from "../types";
+import type { BookedEvent, CreateEventBody, DeletedEvent, Events, TheEvent, UpdateAnEvent, UpdatedEvent, UpdateEventStatus, UserEvents } from "../types";
 
 export async function fetchAllEvents(): Promise<Events> {
     try {
@@ -89,10 +89,27 @@ export async function adminUpdateEventStatus(eventId: string, status: 'APPROVED'
     }
 }
 
-export async function bookEvent(eventId: string): Promise<any> {
-    const { data } = await api.post(`/booking/${eventId}`);
-    return data;
+export async function bookEvent(eventId: string): Promise<BookedEvent> {
+    try {
+        const { data } = await api.post(`/bookings/${eventId}`);
+        return data;
+    } catch (err: any) {
+        const status = err.response?.status ?? "network";
+        throw new Error(`Event booking failed (${status}). \n
+            eventId: ${eventId}; 
+            status: ${status}`);
+    }
   }
+
+export async function getUserBookings(): Promise<BookedEvent[]> {
+    try {
+        const { data } = await api.get(`/bookings`);
+        return data;
+    } catch (err: any) {
+        const status = err.response?.status ?? "network";
+        throw new Error(`Fetch user bookings failed (${status})`);
+    }
+}
 
 export async function deleteEvent(id: string): Promise<DeletedEvent> {
     try {
