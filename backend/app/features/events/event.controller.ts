@@ -147,7 +147,7 @@ export async function deleteEventById(
   next: NextFunction
 ) {
   try {
-    const removed = await EventModel.findByIdAndDelete(req.params.id);
+    const removed = await EventService.deleteOne(req.params.id);
     if (!removed) return next(createHttpError(404, "Event not found"));
     res.status(204).end();
   } catch (err) {
@@ -165,7 +165,7 @@ export async function deleteManyEvents(
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0)
       return next(createHttpError(400, "ids array required"));
-    await EventModel.deleteMany({ _id: { $in: ids } });
+    await EventService.deleteMany(ids);
     res.status(204).end();
   } catch (err) {
     next(createHttpError(500, "Failed to delete events"));

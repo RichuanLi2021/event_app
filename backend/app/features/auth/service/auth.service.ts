@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { AuthticatedUser, LeanUser, SigninUser, SignupUser } from "../../users/types/user.type";
 import { UserModel } from "../../users/models/user.model";
 import { RevokedTokenModel } from "../models/revokedToken.model";
+import { validateObjectId } from "../../../utils/validation";
 
 export class AuthService {
     // signup
@@ -137,7 +138,16 @@ export class AuthService {
             throw new Error("Wrong token type");
         }
 
-        const user = await UserModel.findById(payload.sub).lean<LeanUser>();
+        if (!payload.sub) {
+            throw new Error("Missing user ID in token");
+        }
+
+        const validUserId = validateObjectId(payload.sub);
+        if (!validUserId) {
+            throw new Error("Invalid user ID in token");
+        }
+        
+        const user = await UserModel.findById(validUserId).lean<LeanUser>();
         if (!user) throw new Error("User not found");
 
         return this.signToken(user);
