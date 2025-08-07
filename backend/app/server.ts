@@ -20,13 +20,12 @@ app.use(express.json());
 
 app.get("/", (_req, res) => { res.json(`Hi, API is running on port ${parsedEnv.PORT}`)});
 app.use("/api", apiRouter);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
   res.status(500).json({ message: "Internal Server Error" });
 });
-
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 (async () => {
   try {
     await connectDB();

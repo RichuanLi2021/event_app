@@ -9,7 +9,6 @@ export function validateObjectId(id: string): Types.ObjectId | null {
   if (!id || typeof id !== 'string') {
     return null;
   }
-  
   try {
     return new Types.ObjectId(id);
   } catch (error) {

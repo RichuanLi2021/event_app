@@ -22,6 +22,8 @@ or start frontend and backend separately
 $ npm run client -- (frontend only)
 $ npm run server -- (backend only)
 ```
+## Swagger API docs
+`http://localhost:5174/api-docs`
 
 ## Node environment
 Node version: 20.19.2
